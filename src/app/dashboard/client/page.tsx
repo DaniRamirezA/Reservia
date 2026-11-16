@@ -166,6 +166,18 @@ function ClientDashboardContent() {
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (profileForm.fullName.trim().length < 3) {
+      setFeedbackMessage({ type: 'error', text: 'Ingresa un nombre completo válido (mínimo 3 caracteres).' });
+      return;
+    }
+    if (profileForm.phone.trim() && !/^[+\\d\\s()-]{7,20}$/.test(profileForm.phone.trim())) {
+      setFeedbackMessage({ type: 'error', text: 'Verifica el formato del número de teléfono.' });
+      return;
+    }
+    if (profileForm.birthDate && Number.isNaN(Date.parse(profileForm.birthDate))) {
+      setFeedbackMessage({ type: 'error', text: 'Ingresa una fecha de nacimiento válida.' });
+      return;
+    }
     try {
       await updateUser({
         name: profileForm.fullName,
