@@ -167,6 +167,24 @@ class AuthService {
     return user;
   }
 
+  async requestPasswordReset(email: string): Promise<void> {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) throw new Error('Ingresa tu correo electrónico.');
+
+    const redirectTo = `${window.location.origin}/reset-password`;
+    const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, { redirectTo });
+    if (error) throw new Error(authMessage(error.message));
+  }
+
+  async updateRecoveredPassword(newPassword: string): Promise<void> {
+    if (newPassword.length < 8) throw new Error('La nueva contraseña debe tener mínimo 8 caracteres.');
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) throw new Error('El enlace de recuperación no es válido o ha vencido. Solicita uno nuevo.');
+
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw new Error(authMessage(error.message));
+  }
+
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
     if (newPassword.length < 8) throw new Error('La nueva contraseña debe tener mínimo 8 caracteres.');
 
