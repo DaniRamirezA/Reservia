@@ -163,16 +163,12 @@ export default function LoginPage() {
                 <label className="text-xs font-semibold text-slate-700">
                   Contraseña
                 </label>
-                <a
-                  href="#olvide-contrasena"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setError('La recuperación de contraseña aún no está disponible.');
-                  }}
+                <Link
+                  href="/forgot-password"
                   className="text-xs font-medium text-[#027a6a] hover:underline"
                 >
                   ¿Olvidaste tu contraseña?
-                </a>
+                </Link>
               </div>
               <input
                 type="password"
