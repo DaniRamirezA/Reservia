@@ -256,6 +256,34 @@ function ProviderDashboardContent() {
     .filter((a) => a.status === 'CONFIRMED')
     .reduce((sum, a) => sum + a.price, 0);
 
+  const reportMonthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  const reportMonthEnd = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+  const reportMonthAppointments = appointments.filter((apt) => {
+    const date = new Date(`${apt.date}T12:00:00`);
+    return date >= reportMonthStart && date <= reportMonthEnd && apt.status !== 'CANCELLED';
+  });
+  const reportCompleted = reportMonthAppointments.filter((apt) => effectiveStatus(apt) === 'COMPLETED');
+  const reportRevenue = reportCompleted.reduce((total, apt) => total + apt.price, 0);
+  const reportBookedMinutes = reportMonthAppointments.reduce((total, apt) => total + apt.durationMinutes, 0);
+  const reportAvailableMinutes = Array.from({ length: reportMonthEnd.getDate() }, (_, index) => {
+    const dayOfWeek = new Date(reportMonthStart.getFullYear(), reportMonthStart.getMonth(), index + 1).getDay();
+    return schedule.filter((block) => block.dayOfWeek === dayOfWeek).reduce((sum, block) => {
+      const [startHour, startMinute] = block.startTime.split(':').map(Number);
+      const [endHour, endMinute] = block.endTime.split(':').map(Number);
+      return sum + Math.max(0, (endHour * 60 + endMinute) - (startHour * 60 + startMinute));
+    }, 0);
+  }).reduce((sum, minutes) => sum + minutes, 0);
+  const reportOccupancy = reportAvailableMinutes > 0
+    ? Math.min(100, Math.round((reportBookedMinutes / reportAvailableMinutes) * 100))
+    : 0;
+  const reportDemand = Object.values(reportMonthAppointments.reduce<Record<string, { name: string; count: number }>>((groups, apt) => {
+    groups[apt.serviceName] = groups[apt.serviceName] || { name: apt.serviceName, count: 0 };
+    groups[apt.serviceName].count += 1;
+    return groups;
+  }, {})).sort((a, b) => b.count - a.count);
+  const reportMaxDemand = Math.max(1, ...reportDemand.map((item) => item.count));
+  const reportMonthLabel = reportMonthStart.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
+
   const businessInitials = (user?.businessName || user?.name || '')
     .split(' ')
     .filter(Boolean)
@@ -684,104 +712,51 @@ function ProviderDashboardContent() {
           <div className="space-y-6 animate-in fade-in duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="font-serif text-base font-bold text-slate-900">
-                  Reportes y métricas del negocio
-                </h2>
-                <p className="text-xs text-slate-400 font-normal mt-0.5">
-                  Resumen de facturación, citas y rendimiento operativo
-                </p>
+                <h2 className="font-serif text-base font-bold text-slate-900">Reportes y métricas del negocio</h2>
+                <p className="text-xs text-slate-400 mt-0.5">Indicadores calculados con las reservas registradas este mes</p>
               </div>
-
-              <span className="text-xs font-semibold text-[#025a4e] bg-teal-50 border border-teal-200 px-3 py-1 rounded-xl">
-                Septiembre 2026
-              </span>
+              <span className="rounded-xl border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold capitalize text-[#025a4e]">{reportMonthLabel}</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-semibold text-slate-400 uppercase">Facturación</span>
-                  <TrendingUp className="w-4 h-4 text-emerald-600" />
-                </div>
-                <p className="font-serif text-2xl font-bold text-slate-900">$3.480.000</p>
-                <p className="text-[11px] text-emerald-600 font-medium mt-1">↑ 14% vs mes anterior</p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase text-slate-400">Ingresos de citas completadas</p>
+                <p className="mt-2 font-serif text-2xl font-bold text-slate-900">${reportRevenue.toLocaleString('es-CO')}</p>
               </div>
-
-              <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-semibold text-slate-400 uppercase">Citas Completadas</span>
-                  <CalendarDays className="w-4 h-4 text-[#025a4e]" />
-                </div>
-                <p className="font-serif text-2xl font-bold text-slate-900">118</p>
-                <p className="text-[11px] text-slate-400 mt-1">94% tasa de asistencia</p>
+              <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase text-slate-400">Citas completadas</p>
+                <p className="mt-2 font-serif text-2xl font-bold text-slate-900">{reportCompleted.length}</p>
+                <p className="mt-1 text-[11px] text-slate-400">{reportMonthAppointments.length} reservas no canceladas en el mes</p>
               </div>
-
-              <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-semibold text-slate-400 uppercase">Ocupación</span>
-                  <Clock className="w-4 h-4 text-sky-600" />
-                </div>
-                <p className="font-serif text-2xl font-bold text-slate-900">87%</p>
-                <p className="text-[11px] text-sky-600 font-medium mt-1">Óptima productividad</p>
-              </div>
-
-              <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-semibold text-slate-400 uppercase">Satisfacción</span>
-                  <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                </div>
-                <p className="font-serif text-2xl font-bold text-slate-900">4.9 / 5.0</p>
-                <p className="text-[11px] text-slate-400 mt-1">218 opiniones de clientes</p>
+              <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase text-slate-400">Ocupación estimada de agenda</p>
+                <p className="mt-2 font-serif text-2xl font-bold text-slate-900">{reportOccupancy}%</p>
+                <p className="mt-1 text-[11px] text-slate-400">Minutos reservados / minutos de horario configurado</p>
               </div>
             </div>
 
-            <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
-              <h3 className="font-serif text-sm font-bold text-slate-900 mb-4">
-                Desglose por servicio más demandado
-              </h3>
-
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-xs font-semibold text-slate-800 mb-1">
-                    <span>Limpieza dental profesional (42 citas)</span>
-                    <span className="text-[#025a4e]">$3.360.000 (38%)</span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                    <div className="bg-[#025a4e] h-full rounded-full" style={{ width: '38%' }} />
-                  </div>
+            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+              <h3 className="mb-1 font-serif text-sm font-bold text-slate-900">Servicios más demandados</h3>
+              <p className="mb-5 text-xs text-slate-400">Cantidad de reservas no canceladas por servicio durante el mes</p>
+              {reportDemand.length === 0 ? (
+                <p className="rounded-xl bg-slate-50 p-5 text-center text-xs text-slate-500">Todavía no hay reservas registradas para este mes.</p>
+              ) : (
+                <div className="space-y-5">
+                  {reportDemand.map((item) => (
+                    <div key={item.name}>
+                      <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
+                        <span className="font-semibold text-slate-800">{item.name}</span>
+                        <span className="shrink-0 font-semibold text-[#025a4e]">{item.count} {item.count === 1 ? 'reserva' : 'reservas'}</span>
+                      </div>
+                      <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
+                        <div className="h-full rounded-full bg-[#025a4e]" style={{ width: `${Math.round((item.count / reportMaxDemand) * 100)}%` }} />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-
-                <div>
-                  <div className="flex justify-between text-xs font-semibold text-slate-800 mb-1">
-                    <span>Blanqueamiento dental (28 citas)</span>
-                    <span className="text-[#025a4e]">$5.040.000 (32%)</span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                    <div className="bg-emerald-500 h-full rounded-full" style={{ width: '32%' }} />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs font-semibold text-slate-800 mb-1">
-                    <span>Radiografía panorámica (33 citas)</span>
-                    <span className="text-[#025a4e]">$1.485.000 (18%)</span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                    <div className="bg-sky-500 h-full rounded-full" style={{ width: '18%' }} />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs font-semibold text-slate-800 mb-1">
-                    <span>Consulta de ortodoncia (15 citas)</span>
-                    <span className="text-[#025a4e]">$900.000 (12%)</span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                    <div className="bg-purple-500 h-full rounded-full" style={{ width: '12%' }} />
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
+            <p className="text-[11px] text-slate-400">Los reportes se recalculan al cargar las reservas del proveedor. La ocupación se estima usando los horarios semanales configurados y las duraciones de las reservas; no representa disponibilidad en tiempo real del servidor.</p>
           </div>
         )}
 
