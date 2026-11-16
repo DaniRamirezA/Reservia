@@ -199,6 +199,18 @@ function ProviderDashboardContent() {
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (businessProfile.businessName.trim().length < 2 || !businessProfile.city.trim() || !businessProfile.address.trim()) {
+      setFeedbackMessage({ type: 'error', text: 'Completa el nombre del negocio, la ciudad y la dirección.' });
+      return;
+    }
+    if (businessProfile.phone.trim() && !/^[+\\d\\s()-]{7,20}$/.test(businessProfile.phone.trim())) {
+      setFeedbackMessage({ type: 'error', text: 'Verifica el formato del teléfono o WhatsApp.' });
+      return;
+    }
+    if (businessProfile.website.trim() && !/^https?:\\/\\/.+\\..+/.test(businessProfile.website.trim())) {
+      setFeedbackMessage({ type: 'error', text: 'El sitio web debe iniciar con http:// o https:// y tener un dominio válido.' });
+      return;
+    }
     try {
       await updateUser({
         businessName: businessProfile.businessName,
