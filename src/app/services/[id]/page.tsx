@@ -24,6 +24,7 @@ export default function ServiceDetailPage() {
   const [service, setService] = useState<Service | null>(null);
   const [schedule, setSchedule] = useState<Schedule[]>([]);
   const [days, setDays] = useState<DayAvailability[]>([]);
+  const [cancellationHours, setCancellationHours] = useState(24);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,13 +33,15 @@ export default function ServiceDetailPage() {
       .getServiceById(id)
       .then(async (found) => {
         if (!found) return;
-        const [providerSchedule, availability] = await Promise.all([
+        const [providerSchedule, availability, policyHours] = await Promise.all([
           scheduleService.getSchedule(found.providerId),
           appointmentService.getAvailability(found.providerId, found.durationMinutes),
+          appointmentService.getCancellationHours(found.providerId),
         ]);
         setService(found);
         setSchedule(providerSchedule);
         setDays(availability);
+        setCancellationHours(policyHours);
       })
       .catch((err: Error) => setError(err.message))
       .finally(() => setIsLoading(false));
@@ -156,6 +159,13 @@ export default function ServiceDetailPage() {
               <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Costo referencial</p>
               <p className="text-3xl font-bold text-[#025a4e] mt-1">${service.price.toLocaleString('es-CO')}</p>
               <p className="text-xs text-slate-500 mt-1">Duración: {service.durationMinutes} min</p>
+
+              <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-3">
+                <p className="text-xs font-semibold text-amber-900">Política de cancelación</p>
+                <p className="mt-1 text-xs leading-relaxed text-amber-800">
+                  Puedes cancelar o reprogramar esta reserva hasta {cancellationHours} horas antes de la hora programada. Después de ese plazo, la plataforma bloqueará la solicitud.
+                </p>
+              </div>
 
               {!service.isActive ? (
                 <p className="mt-5 rounded-xl bg-amber-50 border border-amber-100 p-3 text-xs text-amber-700 flex gap-2">
