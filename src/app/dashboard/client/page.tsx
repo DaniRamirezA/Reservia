@@ -49,6 +49,7 @@ function ClientDashboardContent() {
   const [listError, setListError] = useState<string | null>(null);
 
   const [cancelModalApt, setCancelModalApt] = useState<Appointment | null>(null);
+  const [detailModalApt, setDetailModalApt] = useState<Appointment | null>(null);
   const [rescheduleModalApt, setRescheduleModalApt] = useState<Appointment | null>(null);
   const [policyHours, setPolicyHours] = useState(24);
   const [rescheduleDays, setRescheduleDays] = useState<DayAvailability[]>([]);
@@ -526,15 +527,24 @@ function ClientDashboardContent() {
                       </td>
 
                       <td className="py-4 px-6 text-right">
-                        {item.status !== 'CANCELLED' ? (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600">
-                            Completada
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-500">
-                            Cancelada
-                          </span>
-                        )}
+                        <div className="flex items-center justify-end gap-2">
+                          {item.status !== 'CANCELLED' ? (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600">
+                              Completada
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-500">
+                              Cancelada
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setDetailModalApt(item)}
+                            className="rounded-lg border border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-[#025a4e] transition-colors hover:bg-teal-50"
+                          >
+                            Ver detalle
+                          </button>
+                        </div>
                       </td>
                     </tr>
                     ))
@@ -815,6 +825,58 @@ function ClientDashboardContent() {
           </div>
         )}
       </div>
+
+      {detailModalApt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-2xl border border-slate-100 bg-white p-6 shadow-xl">
+            <div className="mb-5 flex items-center justify-between">
+              <h3 className="font-serif text-lg font-bold text-slate-900">Detalle de la reserva</h3>
+              <button type="button" onClick={() => setDetailModalApt(null)} className="text-slate-400 hover:text-slate-600" aria-label="Cerrar detalle">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-4 text-sm">
+              <div>
+                <p className="text-xs text-slate-400">Servicio</p>
+                <p className="font-semibold text-slate-900">{detailModalApt.serviceName}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-400">Proveedor</p>
+                <p className="font-semibold text-slate-900">{detailModalApt.providerName}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-slate-400">Fecha y hora</p>
+                  <p className="font-medium text-slate-800">{formatDate(detailModalApt.date)} · {formatTime(detailModalApt.time)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400">Duración</p>
+                  <p className="font-medium text-slate-800">{detailModalApt.durationMinutes} minutos</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-slate-400">Valor</p>
+                  <p className="font-semibold text-slate-900">${detailModalApt.price.toLocaleString('es-CO')}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400">Estado</p>
+                  <p className="font-medium text-slate-800">{detailModalApt.status === 'CANCELLED' ? 'Cancelada' : 'Completada'}</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-slate-400">Información adicional</p>
+                <p className="whitespace-pre-wrap text-slate-700">{detailModalApt.notes?.trim() || 'No se registraron notas adicionales para esta reserva.'}</p>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button type="button" onClick={() => setDetailModalApt(null)} className="rounded-xl bg-[#025a4e] px-5 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[#03483e]">
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {cancelModalApt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in">
