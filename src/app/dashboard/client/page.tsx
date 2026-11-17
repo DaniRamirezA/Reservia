@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { appointmentService } from '@/services/appointmentService';
 import { authService } from '@/services/authService';
+import { reviewService } from '@/services/reviewService';
 import { Appointment, DayAvailability } from '@/types/appointment';
 import { formatDate, formatTime, hoursUntil, isPast, parseISODate } from '@/lib/agenda';
 import {
@@ -21,6 +22,7 @@ import {
   CalendarDays,
   Clock,
   User,
+  Star,
 } from 'lucide-react';
 
 type TabType = 'citas' | 'historial' | 'perfil';
@@ -50,6 +52,11 @@ function ClientDashboardContent() {
 
   const [cancelModalApt, setCancelModalApt] = useState<Appointment | null>(null);
   const [detailModalApt, setDetailModalApt] = useState<Appointment | null>(null);
+  const [reviewModalApt, setReviewModalApt] = useState<Appointment | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewedAppointmentIds, setReviewedAppointmentIds] = useState<string[]>([]);
+
   const [rescheduleModalApt, setRescheduleModalApt] = useState<Appointment | null>(null);
   const [policyHours, setPolicyHours] = useState(24);
   const [rescheduleDays, setRescheduleDays] = useState<DayAvailability[]>([]);
@@ -87,6 +94,14 @@ function ClientDashboardContent() {
       .catch((err: Error) => setListError(err.message))
       .finally(() => setIsLoadingList(false));
   }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+    reviewService.getReviewedAppointmentIds(userId)
+      .then(setReviewedAppointmentIds)
+      .catch((err: Error) => setListError(err.message));
+  }, [userId]);
+
 
   const openCancel = (apt: Appointment) => {
     setModalError(null);
@@ -556,6 +571,19 @@ function ClientDashboardContent() {
                           >
                             Ver detalle
                           </button>
+                          {item.status !== 'CANCELLED' && isFinished(item) && (
+                            reviewedAppointmentIds.includes(item.id) ? (
+                              <span className="rounded-lg bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-700">Opinión enviada</span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => { setReviewRating(5); setReviewComment(''); setModalError(null); setReviewModalApt(item); }}
+                                className="rounded-lg bg-[#025a4e] px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-[#03483e]"
+                              >
+                                Dejar opinión
+                              </button>
+                            )
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -837,6 +865,56 @@ function ClientDashboardContent() {
           </div>
         )}
       </div>
+
+
+      {reviewModalApt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!user || !reviewModalApt) return;
+              if (reviewComment.trim().length < 5) {
+                setModalError('Escribe un comentario de al menos 5 caracteres.');
+                return;
+              }
+              setIsSaving(true);
+              setModalError(null);
+              try {
+                await reviewService.createReview(reviewModalApt, user, reviewRating, reviewComment);
+                setReviewedAppointmentIds((prev) => [...prev, reviewModalApt.id]);
+                setFeedbackMessage({ type: 'success', text: '¡Gracias! Tu opinión fue publicada.' });
+                setReviewModalApt(null);
+              } catch (err) {
+                setModalError(err instanceof Error ? err.message : 'No se pudo publicar tu opinión.');
+              } finally {
+                setIsSaving(false);
+              }
+            }}
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-serif text-lg font-bold text-slate-900">Califica tu experiencia</h3>
+              <button type="button" onClick={() => setReviewModalApt(null)} className="text-slate-400 hover:text-slate-600" aria-label="Cerrar"><X className="h-5 w-5" /></button>
+            </div>
+            <p className="mb-4 text-xs text-slate-500">{reviewModalApt.serviceName} · {reviewModalApt.providerName}</p>
+            <label className="mb-2 block text-xs font-semibold text-slate-700">Tu calificación</label>
+            <div className="mb-5 flex items-center gap-2" role="radiogroup" aria-label="Calificación">
+              {[1, 2, 3, 4, 5].map((value) => (
+                <button key={value} type="button" onClick={() => setReviewRating(value)} aria-label={`${value} estrellas`} aria-pressed={reviewRating === value}>
+                  <Star className={`h-8 w-8 ${value <= reviewRating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
+                </button>
+              ))}
+            </div>
+            <label htmlFor="review-comment" className="mb-2 block text-xs font-semibold text-slate-700">Comentario</label>
+            <textarea id="review-comment" value={reviewComment} onChange={(e) => setReviewComment(e.target.value)} minLength={5} maxLength={1000} required rows={4} placeholder="Cuéntanos cómo fue tu experiencia..." className="w-full rounded-xl border border-slate-200 p-3 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-[#025a4e]" />
+            {modalError && <p className="mt-3 rounded-lg bg-rose-50 p-3 text-xs text-rose-700">{modalError}</p>}
+            <div className="mt-5 flex justify-end gap-2">
+              <button type="button" onClick={() => setReviewModalApt(null)} className="rounded-lg px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100">Cancelar</button>
+              <button type="submit" disabled={isSaving || reviewComment.trim().length < 5} className="rounded-lg bg-[#025a4e] px-5 py-2 text-xs font-semibold text-white disabled:opacity-50">{isSaving ? 'Publicando...' : 'Publicar opinión'}</button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {detailModalApt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in">

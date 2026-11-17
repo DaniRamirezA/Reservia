@@ -10,6 +10,7 @@ import { Service } from '@/types/service';
 import { Schedule } from '@/types/schedule';
 import { DayAvailability } from '@/types/appointment';
 import { serviceService } from '@/services/serviceService';
+import { reviewService, ServiceReview } from '@/services/reviewService';
 import { scheduleService } from '@/services/scheduleService';
 import { appointmentService } from '@/services/appointmentService';
 import { categoryEmoji, categoryLabel } from '@/lib/categories';
@@ -22,6 +23,7 @@ export default function ServiceDetailPage() {
   const { user } = useAuth();
 
   const [service, setService] = useState<Service | null>(null);
+  const [reviews, setReviews] = useState<ServiceReview[]>([]);
   const [schedule, setSchedule] = useState<Schedule[]>([]);
   const [days, setDays] = useState<DayAvailability[]>([]);
   const [cancellationHours, setCancellationHours] = useState(24);
@@ -39,6 +41,8 @@ export default function ServiceDetailPage() {
           appointmentService.getCancellationHours(found.providerId),
         ]);
         setService(found);
+        const serviceReviews = await reviewService.getServiceReviews(found.id);
+        setReviews(serviceReviews);
         setSchedule(providerSchedule);
         setDays(availability);
         setCancellationHours(policyHours);
@@ -124,6 +128,33 @@ export default function ServiceDetailPage() {
                 <h2 className="text-sm font-bold text-slate-900 mb-1.5">Descripción</h2>
                 <p className="text-sm text-slate-600 leading-relaxed">{service.description}</p>
               </div>
+
+              <section>
+                <h2 className="mb-3 text-sm font-bold text-slate-900">Opiniones de clientes</h2>
+                {reviews.length === 0 ? (
+                  <p className="rounded-xl border border-slate-100 bg-slate-50 p-4 text-xs text-slate-500">Este servicio todavía no tiene opiniones. Sé la primera persona en compartir tu experiencia.</p>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+                      <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                      {(reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1)}
+                      <span className="text-xs font-normal text-slate-500">({reviews.length} opiniones)</span>
+                    </div>
+                    {reviews.map((review) => (
+                      <article key={review.id} className="rounded-xl border border-slate-100 p-4">
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                          <p className="text-xs font-semibold text-slate-800">{review.clientName}</p>
+                          <div className="flex items-center gap-0.5" aria-label={`${review.rating} de 5 estrellas`}>
+                            {[1, 2, 3, 4, 5].map((value) => <Star key={value} className={`h-3.5 w-3.5 ${value <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />)}
+                          </div>
+                        </div>
+                        <p className="text-xs leading-relaxed text-slate-600">{review.comment}</p>
+                        <p className="mt-2 text-[10px] text-slate-400">{new Date(review.createdAt).toLocaleDateString('es-CO')}</p>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </section>
 
               <div>
                 <h2 className="text-sm font-bold text-slate-900 mb-3">Próximos horarios disponibles</h2>
