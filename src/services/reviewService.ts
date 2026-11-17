@@ -53,6 +53,17 @@ class ReviewService {
     return (data || []).map((row) => fromRow(row as ReviewRow));
   }
 
+  async getProviderReviews(serviceIds: string[]): Promise<ServiceReview[]> {
+    if (serviceIds.length === 0) return [];
+    const { data, error } = await supabase
+      .from('reviews')
+      .select('*')
+      .in('service_id', serviceIds)
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(error.message);
+    return (data || []).map((row) => fromRow(row as ReviewRow));
+  }
+
   async createReview(appointment: Appointment, client: User, rating: number, comment: string): Promise<void> {
     if (appointment.status === 'CANCELLED') throw new Error('No puedes opinar sobre una reserva cancelada.');
     if (!Number.isInteger(rating) || rating < 1 || rating > 5) throw new Error('Selecciona una calificación entre 1 y 5 estrellas.');

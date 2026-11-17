@@ -10,6 +10,7 @@ import ServiceFormModal from '@/components/provider/ServiceFormModal';
 import ScheduleEditor from '@/components/provider/ScheduleEditor';
 import { appointmentService } from '@/services/appointmentService';
 import { serviceService } from '@/services/serviceService';
+import { reviewService, ServiceReview } from '@/services/reviewService';
 import { scheduleService, DayConfig } from '@/services/scheduleService';
 import { Appointment, AppointmentStatus } from '@/types/appointment';
 import { Schedule } from '@/types/schedule';
@@ -34,7 +35,7 @@ import {
   ListTodo,
 } from 'lucide-react';
 
-type ProviderTabType = 'agenda' | 'servicios' | 'horarios' | 'reportes' | 'perfil';
+type ProviderTabType = 'agenda' | 'servicios' | 'horarios' | 'reportes' | 'opiniones' | 'perfil';
 
 const STATUS_LABEL: Record<AppointmentStatus, string> = {
   CONFIRMED: 'Confirmada',
@@ -63,7 +64,7 @@ function ProviderDashboardContent() {
   const router = useRouter();
 
   const tabParam = searchParams.get('tab') as ProviderTabType;
-  const activeTab: ProviderTabType = ['agenda', 'servicios', 'horarios', 'reportes', 'perfil'].includes(tabParam)
+  const activeTab: ProviderTabType = ['agenda', 'servicios', 'horarios', 'reportes', 'opiniones', 'perfil'].includes(tabParam)
     ? tabParam
     : 'agenda';
 
@@ -86,6 +87,8 @@ function ProviderDashboardContent() {
 
   const [schedule, setSchedule] = useState<Schedule[]>([]);
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(true);
+  const [providerReviews, setProviderReviews] = useState<ServiceReview[]>([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(true);
 
   const userId = user?.id;
 
@@ -112,6 +115,14 @@ function ProviderDashboardContent() {
       .catch(showError)
       .finally(() => setIsLoadingSchedule(false));
   }, [userId]);
+
+  useEffect(() => {
+    if (!userId || isLoadingServices) return;
+    reviewService.getProviderReviews(services.map((service) => service.id))
+      .then(setProviderReviews)
+      .catch((err: Error) => setLoadError(err.message))
+      .finally(() => setIsLoadingReviews(false));
+  }, [userId, isLoadingServices, services]);
 
   const [businessProfile, setBusinessProfile] = useState({
     businessName: user?.businessName || '',
@@ -532,6 +543,18 @@ function ProviderDashboardContent() {
           </button>
 
           <button
+            onClick={() => handleTabChange('opiniones')}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              activeTab === 'opiniones'
+                ? 'bg-[#025a4e] text-white shadow-sm'
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <Star className="w-3.5 h-3.5" />
+            <span>Opiniones ({providerReviews.length})</span>
+          </button>
+
+          <button
             onClick={() => handleTabChange('perfil')}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
               activeTab === 'perfil'
@@ -757,6 +780,54 @@ function ProviderDashboardContent() {
               )}
             </div>
             <p className="text-[11px] text-slate-400">Los reportes se recalculan al cargar las reservas del proveedor. La ocupación se estima usando los horarios semanales configurados y las duraciones de las reservas; no representa disponibilidad en tiempo real del servidor.</p>
+          </div>
+        )}
+
+        {activeTab === 'opiniones' && (
+          <div className="space-y-5 animate-in fade-in duration-200">
+            <div>
+              <h2 className="font-serif text-base font-bold text-slate-900">Opiniones de clientes</h2>
+              <p className="mt-0.5 text-xs text-slate-400">Calificaciones y comentarios recibidos en tus servicios</p>
+            </div>
+            {isLoadingReviews ? (
+              <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center text-xs text-slate-400">Cargando opiniones...</div>
+            ) : providerReviews.length === 0 ? (
+              <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center text-xs text-slate-500">Todavía no has recibido opiniones de tus clientes.</div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                    <p className="text-[11px] font-semibold uppercase text-slate-400">Calificación promedio</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                      <span className="font-serif text-2xl font-bold text-slate-900">{(providerReviews.reduce((sum, review) => sum + review.rating, 0) / providerReviews.length).toFixed(1)}</span>
+                      <span className="text-xs text-slate-400">de 5</span>
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                    <p className="text-[11px] font-semibold uppercase text-slate-400">Opiniones recibidas</p>
+                    <p className="mt-2 font-serif text-2xl font-bold text-slate-900">{providerReviews.length}</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {providerReviews.map((review) => (
+                    <article key={review.id} className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-bold text-slate-900">{review.clientName}</p>
+                          <p className="mt-0.5 text-[11px] text-slate-400">{services.find((service) => service.id === providerReviews.find((item) => item.id === review.id)?.appointmentId)?.name || 'Servicio'}</p>
+                        </div>
+                        <div className="flex items-center gap-0.5" aria-label={`${review.rating} de 5 estrellas`}>
+                          {[1, 2, 3, 4, 5].map((value) => <Star key={value} className={`h-3.5 w-3.5 ${value <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />)}
+                        </div>
+                      </div>
+                      <p className="mt-3 text-xs leading-relaxed text-slate-600">{review.comment}</p>
+                      <p className="mt-2 text-[10px] text-slate-400">{new Date(review.createdAt).toLocaleDateString('es-CO')}</p>
+                    </article>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )}
 
