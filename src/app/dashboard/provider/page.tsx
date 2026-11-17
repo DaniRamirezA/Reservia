@@ -815,7 +815,7 @@ function ProviderDashboardContent() {
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <p className="text-xs font-bold text-slate-900">{review.clientName}</p>
-                          <p className="mt-0.5 text-[11px] text-slate-400">{services.find((service) => service.id === providerReviews.find((item) => item.id === review.id)?.appointmentId)?.name || 'Servicio'}</p>
+                          <p className="mt-0.5 text-[11px] text-slate-400">{services.find((service) => service.id === review.serviceId)?.name || 'Servicio'}</p>
                         </div>
                         <div className="flex items-center gap-0.5" aria-label={`${review.rating} de 5 estrellas`}>
                           {[1, 2, 3, 4, 5].map((value) => <Star key={value} className={`h-3.5 w-3.5 ${value <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />)}

@@ -16,6 +16,7 @@ interface ReviewRow {
 export interface ServiceReview {
   id: string;
   appointmentId: string;
+  serviceId: string;
   clientName: string;
   rating: number;
   comment: string;
@@ -26,6 +27,7 @@ function fromRow(row: ReviewRow): ServiceReview {
   return {
     id: row.id,
     appointmentId: row.appointment_id,
+    serviceId: row.service_id,
     clientName: row.client_name,
     rating: row.rating,
     comment: row.comment,
