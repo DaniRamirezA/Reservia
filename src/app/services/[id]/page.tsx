@@ -115,7 +115,7 @@ export default function ServiceDetailPage() {
                   )}
                   <span className="inline-flex items-center gap-1.5">
                     <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    {service.rating.toFixed(1)} ({service.reviewsCount})
+                    {reviews.length > 0 ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1) : '0.0'} ({reviews.length})
                   </span>
                   <span className="inline-flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5" />
