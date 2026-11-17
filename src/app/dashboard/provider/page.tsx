@@ -207,7 +207,7 @@ function ProviderDashboardContent() {
       setFeedbackMessage({ type: 'error', text: 'Verifica el formato del teléfono o WhatsApp.' });
       return;
     }
-    if (businessProfile.website.trim() && !/^https?:\\/\\/.+\\..+/.test(businessProfile.website.trim())) {
+    if (businessProfile.website.trim() && !/^https?:\/\/.+\..+/.test(businessProfile.website.trim())) {
       setFeedbackMessage({ type: 'error', text: 'El sitio web debe iniciar con http:// o https:// y tener un dominio válido.' });
       return;
     }
