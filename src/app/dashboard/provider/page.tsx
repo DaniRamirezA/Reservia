@@ -78,6 +78,7 @@ function ProviderDashboardContent() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoadingAppointments, setIsLoadingAppointments] = useState(true);
   const [appointmentToCancel, setAppointmentToCancel] = useState<Appointment | null>(null);
+  const [detailAppointment, setDetailAppointment] = useState<Appointment | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
 
   const [services, setServices] = useState<Service[]>([]);
@@ -278,6 +279,10 @@ function ProviderDashboardContent() {
 
   const reportMonthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   const reportMonthEnd = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+  const reportMonthCancelled = appointments.filter((apt) => {
+    const date = new Date(`${apt.date}T12:00:00`);
+    return date >= reportMonthStart && date <= reportMonthEnd && apt.status === 'CANCELLED';
+  });
   const reportMonthAppointments = appointments.filter((apt) => {
     const date = new Date(`${apt.date}T12:00:00`);
     return date >= reportMonthStart && date <= reportMonthEnd && apt.status !== 'CANCELLED';
@@ -357,12 +362,20 @@ function ProviderDashboardContent() {
             {STATUS_LABEL[status]}
           </span>
 
-          {canCancel && (
+          {canCancel ? (
             <button
-              onClick={() => setAppointmentToCancel(apt)}
+              onClick={() => { setCancellationReason(''); setAppointmentToCancel(apt); }}
               className="text-xs font-normal text-rose-500 hover:text-rose-600 border border-rose-200 hover:bg-rose-50/50 rounded-lg px-3 py-1 transition-colors"
             >
               Cancelar
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setDetailAppointment(apt)}
+              className="text-xs font-semibold text-[#025a4e] border border-slate-200 hover:bg-teal-50 rounded-lg px-3 py-1 transition-colors"
+            >
+              Ver detalle
             </button>
           )}
         </div>
@@ -752,7 +765,7 @@ function ProviderDashboardContent() {
               <span className="rounded-xl border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold capitalize text-[#025a4e]">{reportMonthLabel}</span>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
                 <p className="text-[11px] font-semibold uppercase text-slate-400">Ingresos de citas completadas</p>
                 <p className="mt-2 font-serif text-2xl font-bold text-slate-900">${reportRevenue.toLocaleString('es-CO')}</p>
@@ -762,7 +775,12 @@ function ProviderDashboardContent() {
                 <p className="mt-2 font-serif text-2xl font-bold text-slate-900">{reportCompleted.length}</p>
                 <p className="mt-1 text-[11px] text-slate-400">{reportMonthAppointments.length} reservas no canceladas en el mes</p>
               </div>
-              <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+              <div className="rounded-2xl border border-rose-100 bg-white p-5 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase text-slate-400">Citas canceladas</p>
+                <p className="mt-2 font-serif text-2xl font-bold text-rose-600">{reportMonthCancelled.length}</p>
+                <p className="mt-1 text-[11px] text-slate-400">Canceladas durante este mes</p>
+              </div>
+<div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
                 <p className="text-[11px] font-semibold uppercase text-slate-400">Ocupación estimada de agenda</p>
                 <p className="mt-2 font-serif text-2xl font-bold text-slate-900">{reportOccupancy}%</p>
                 <p className="mt-1 text-[11px] text-slate-400">Minutos reservados / minutos de horario configurado</p>
@@ -1096,6 +1114,47 @@ function ProviderDashboardContent() {
           onConfirm={handleDeactivateService}
           onClose={() => setServiceToDeactivate(null)}
         />
+      )}
+
+      {detailAppointment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl border border-slate-100 bg-white p-6 shadow-xl">
+            <div className="mb-5 flex items-center justify-between">
+              <h3 className="font-serif text-lg font-bold text-slate-900">Detalle de la reserva</h3>
+              <button type="button" onClick={() => setDetailAppointment(null)} className="text-slate-400 hover:text-slate-600" aria-label="Cerrar detalle">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-4 text-sm">
+              <div><p className="text-xs text-slate-400">Cliente</p><p className="font-semibold text-slate-900">{detailAppointment.clientName}</p></div>
+              <div><p className="text-xs text-slate-400">Servicio</p><p className="font-semibold text-slate-900">{detailAppointment.serviceName}</p></div>
+              <div className="grid grid-cols-2 gap-4">
+                <div><p className="text-xs text-slate-400">Fecha de la cita</p><p className="font-medium text-slate-800">{formatDate(detailAppointment.date)} · {formatTime(detailAppointment.time)}</p></div>
+                <div><p className="text-xs text-slate-400">Estado</p><p className="font-medium text-slate-800">{STATUS_LABEL[effectiveStatus(detailAppointment)]}</p></div>
+              </div>
+              {detailAppointment.status === 'CANCELLED' && (
+                <div className="grid grid-cols-2 gap-4 rounded-xl bg-rose-50/70 p-3">
+                  <div>
+                    <p className="text-xs text-slate-500">Cancelada por</p>
+                    <p className="font-semibold text-slate-900">{detailAppointment.cancelledBy === 'CLIENT' ? 'Cliente' : detailAppointment.cancelledBy === 'PROVIDER' ? 'Proveedor' : 'No disponible'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500">Fecha de cancelación</p>
+                    <p className="font-medium text-slate-800">{detailAppointment.cancelledAt ? new Date(detailAppointment.cancelledAt).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }) : 'No disponible'}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-xs text-slate-500">Motivo de cancelación</p>
+                    <p className="whitespace-pre-wrap text-slate-800">{detailAppointment.cancellationReason?.trim() || 'No se indicó un motivo de cancelación.'}</p>
+                  </div>
+                </div>
+              )}
+              {detailAppointment.notes && <div><p className="text-xs text-slate-400">Información adicional</p><p className="whitespace-pre-wrap text-slate-700">{detailAppointment.notes}</p></div>}
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button type="button" onClick={() => setDetailAppointment(null)} className="rounded-xl bg-[#025a4e] px-5 py-2.5 text-xs font-semibold text-white hover:bg-[#03483e]">Cerrar</button>
+            </div>
+          </div>
+        </div>
       )}
 
       {appointmentToCancel && (
