@@ -23,6 +23,8 @@ interface AppointmentRow {
   status: 'CONFIRMED' | 'PENDING' | 'CANCELLED' | 'COMPLETED';
   image_url: string | null;
   notes: string | null;
+  cancelled_by: 'CLIENT' | 'PROVIDER' | null;
+  cancelled_at: string | null;
   created_at: string;
 }
 
@@ -52,6 +54,8 @@ function fromAppointmentRow(row: AppointmentRow): Appointment {
     status: row.status,
     imageUrl: row.image_url ?? undefined,
     notes: row.notes ?? undefined,
+    cancelledBy: row.cancelled_by ?? undefined,
+    cancelledAt: row.cancelled_at ?? undefined,
     createdAt: row.created_at,
   };
 }
@@ -192,7 +196,7 @@ class AppointmentService {
 
     const { data, error } = await supabase
       .from('appointments')
-      .update({ status: 'CANCELLED' })
+      .update({ status: 'CANCELLED', cancelled_by: by, cancelled_at: new Date().toISOString() })
       .eq('id', appointment.id)
       .in('status', ['PENDING', 'CONFIRMED'])
       .select()

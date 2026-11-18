@@ -17,6 +17,8 @@ export interface Appointment {
   status: AppointmentStatus;
   imageUrl?: string;
   notes?: string;
+  cancelledBy?: 'CLIENT' | 'PROVIDER';
+  cancelledAt?: string;
   createdAt: string;
 }
 

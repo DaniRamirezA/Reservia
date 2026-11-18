@@ -954,6 +954,28 @@ function ClientDashboardContent() {
                   <p className="font-medium text-slate-800">{detailModalApt.status === 'CANCELLED' ? 'Cancelada' : 'Completada'}</p>
                 </div>
               </div>
+              {detailModalApt.status === 'CANCELLED' && (
+                <div className="grid grid-cols-2 gap-4 rounded-xl bg-rose-50/70 p-3">
+                  <div>
+                    <p className="text-xs text-slate-500">Cancelada por</p>
+                    <p className="font-semibold text-slate-900">
+                      {detailModalApt.cancelledBy === 'CLIENT'
+                        ? 'Cliente'
+                        : detailModalApt.cancelledBy === 'PROVIDER'
+                          ? 'Proveedor'
+                          : 'No disponible'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500">Fecha de cancelación</p>
+                    <p className="font-medium text-slate-800">
+                      {detailModalApt.cancelledAt
+                        ? new Date(detailModalApt.cancelledAt).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })
+                        : 'No disponible'}
+                    </p>
+                  </div>
+                </div>
+              )}
               <div>
                 <p className="text-xs text-slate-400">Información adicional</p>
                 <p className="whitespace-pre-wrap text-slate-700">{detailModalApt.notes?.trim() || 'No se registraron notas adicionales para esta reserva.'}</p>
