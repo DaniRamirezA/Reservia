@@ -288,6 +288,7 @@ function ProviderDashboardContent() {
     return date >= reportMonthStart && date <= reportMonthEnd && apt.status !== 'CANCELLED';
   });
   const reportCompleted = reportMonthAppointments.filter((apt) => effectiveStatus(apt) === 'COMPLETED');
+  const reportPendingAttention = reportMonthAppointments.filter((apt) => effectiveStatus(apt) !== 'COMPLETED');
   const reportRevenue = reportCompleted.reduce((total, apt) => total + apt.price, 0);
   const reportBookedMinutes = reportMonthAppointments.reduce((total, apt) => total + apt.durationMinutes, 0);
   const reportAvailableMinutes = Array.from({ length: reportMonthEnd.getDate() }, (_, index) => {
@@ -765,15 +766,19 @@ function ProviderDashboardContent() {
               <span className="rounded-xl border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold capitalize text-[#025a4e]">{reportMonthLabel}</span>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
                 <p className="text-[11px] font-semibold uppercase text-slate-400">Ingresos de citas completadas</p>
                 <p className="mt-2 font-serif text-2xl font-bold text-slate-900">${reportRevenue.toLocaleString('es-CO')}</p>
               </div>
               <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase text-slate-400">Citas completadas</p>
+                <p className="text-[11px] font-semibold uppercase text-slate-400">Servicios completados</p>
                 <p className="mt-2 font-serif text-2xl font-bold text-slate-900">{reportCompleted.length}</p>
-                <p className="mt-1 text-[11px] text-slate-400">Reservas no canceladas durante el mes: {reportMonthAppointments.length}</p>
+              </div>
+              <div className="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase text-slate-400">Pendientes de atención</p>
+                <p className="mt-2 font-serif text-2xl font-bold text-amber-600">{reportPendingAttention.length}</p>
+                <p className="mt-1 text-[11px] text-slate-400">Reservas aún no atendidas durante este mes</p>
               </div>
               <div className="rounded-2xl border border-rose-100 bg-white p-5 shadow-sm">
                 <p className="text-[11px] font-semibold uppercase text-slate-400">Citas canceladas</p>
