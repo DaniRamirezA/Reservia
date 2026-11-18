@@ -51,6 +51,7 @@ function ClientDashboardContent() {
   const [listError, setListError] = useState<string | null>(null);
 
   const [cancelModalApt, setCancelModalApt] = useState<Appointment | null>(null);
+  const [cancellationReason, setCancellationReason] = useState('');
   const [detailModalApt, setDetailModalApt] = useState<Appointment | null>(null);
   const [reviewModalApt, setReviewModalApt] = useState<Appointment | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
@@ -105,6 +106,7 @@ function ClientDashboardContent() {
 
   const openCancel = (apt: Appointment) => {
     setModalError(null);
+    setCancellationReason('');
     setCancelModalApt(apt);
     appointmentService.getCancellationHours(apt.providerId).then(setPolicyHours);
   };
@@ -114,7 +116,7 @@ function ClientDashboardContent() {
     setIsSaving(true);
     setModalError(null);
     try {
-      const updated = await appointmentService.cancelAppointment(cancelModalApt, 'CLIENT');
+      const updated = await appointmentService.cancelAppointment(cancelModalApt, 'CLIENT', cancellationReason);
       setAppointments((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
       setFeedbackMessage({
         type: 'success',
@@ -976,7 +978,13 @@ function ClientDashboardContent() {
                   </div>
                 </div>
               )}
-              <div>
+              {detailModalApt.status === 'CANCELLED' && (
+                <div>
+                  <p className="text-xs text-slate-400">Motivo de cancelación</p>
+                  <p className="whitespace-pre-wrap text-slate-700">{detailModalApt.cancellationReason?.trim() || 'No se indicó un motivo de cancelación.'}</p>
+                </div>
+              )}
+<div>
                 <p className="text-xs text-slate-400">Información adicional</p>
                 <p className="whitespace-pre-wrap text-slate-700">{detailModalApt.notes?.trim() || 'No se registraron notas adicionales para esta reserva.'}</p>
               </div>
@@ -1008,6 +1016,17 @@ function ClientDashboardContent() {
             <p className="text-[11px] text-slate-400 mb-4">
               Política del negocio: se puede cancelar hasta {policyHours} horas antes de la cita.
             </p>
+            <label className="mb-4 block">
+              <span className="mb-1.5 block text-xs font-semibold text-slate-700">Motivo de cancelación (opcional)</span>
+              <textarea
+                value={cancellationReason}
+                onChange={(e) => setCancellationReason(e.target.value)}
+                rows={3}
+                maxLength={500}
+                placeholder="Cuéntanos por qué deseas cancelar..."
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-700 outline-none focus:border-[#025a4e]"
+              />
+            </label>
 
             {cancelBlocked && (
               <div className="mb-4 rounded-lg bg-amber-50 border border-amber-100 p-3 text-xs text-amber-700">

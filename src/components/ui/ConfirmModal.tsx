@@ -6,12 +6,13 @@ import { AlertCircle } from 'lucide-react';
 interface ConfirmModalProps {
   title: string;
   message: React.ReactNode;
+  extraContent?: React.ReactNode;
   confirmLabel: string;
   onConfirm: () => Promise<void>;
   onClose: () => void;
 }
 
-export default function ConfirmModal({ title, message, confirmLabel, onConfirm, onClose }: ConfirmModalProps) {
+export default function ConfirmModal({ title, message, extraContent, confirmLabel, onConfirm, onClose }: ConfirmModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,6 +36,7 @@ export default function ConfirmModal({ title, message, confirmLabel, onConfirm, 
         </div>
         <h3 className="font-serif text-lg font-bold text-slate-900 mb-2">{title}</h3>
         <div className="text-xs text-slate-500 mb-5 leading-relaxed">{message}</div>
+        {extraContent}
 
         {error && (
           <div className="mb-4 rounded-lg bg-rose-50 border border-rose-100 p-3 text-xs text-rose-700">{error}</div>

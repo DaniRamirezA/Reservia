@@ -78,6 +78,7 @@ function ProviderDashboardContent() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoadingAppointments, setIsLoadingAppointments] = useState(true);
   const [appointmentToCancel, setAppointmentToCancel] = useState<Appointment | null>(null);
+  const [cancellationReason, setCancellationReason] = useState('');
 
   const [services, setServices] = useState<Service[]>([]);
   const [isLoadingServices, setIsLoadingServices] = useState(true);
@@ -190,7 +191,7 @@ function ProviderDashboardContent() {
 
   const handleCancelAppointment = async () => {
     if (!appointmentToCancel) return;
-    const updated = await appointmentService.cancelAppointment(appointmentToCancel, 'PROVIDER');
+    const updated = await appointmentService.cancelAppointment(appointmentToCancel, 'PROVIDER', cancellationReason);
     setAppointments((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
     setFeedbackMessage({
       type: 'success',
@@ -1109,9 +1110,22 @@ function ProviderDashboardContent() {
               quedará libre para nuevas reservas.
             </>
           }
+          extraContent={
+            <label className="mt-3 block">
+              <span className="mb-1.5 block text-xs font-semibold text-slate-700">Motivo de cancelación (opcional)</span>
+              <textarea
+                value={cancellationReason}
+                onChange={(e) => setCancellationReason(e.target.value)}
+                rows={3}
+                maxLength={500}
+                placeholder="Indica el motivo de la cancelación..."
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-700 outline-none focus:border-[#025a4e]"
+              />
+            </label>
+          }
           confirmLabel="Sí, cancelar cita"
           onConfirm={handleCancelAppointment}
-          onClose={() => setAppointmentToCancel(null)}
+          onClose={() => { setAppointmentToCancel(null); setCancellationReason(''); }}
         />
       )}
     </div>

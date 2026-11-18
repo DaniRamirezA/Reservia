@@ -19,6 +19,7 @@ export interface Appointment {
   notes?: string;
   cancelledBy?: 'CLIENT' | 'PROVIDER';
   cancelledAt?: string;
+  cancellationReason?: string;
   createdAt: string;
 }
 

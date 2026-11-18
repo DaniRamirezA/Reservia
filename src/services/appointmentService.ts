@@ -25,6 +25,7 @@ interface AppointmentRow {
   notes: string | null;
   cancelled_by: 'CLIENT' | 'PROVIDER' | null;
   cancelled_at: string | null;
+  cancellation_reason: string | null;
   created_at: string;
 }
 
@@ -56,6 +57,7 @@ function fromAppointmentRow(row: AppointmentRow): Appointment {
     notes: row.notes ?? undefined,
     cancelledBy: row.cancelled_by ?? undefined,
     cancelledAt: row.cancelled_at ?? undefined,
+    cancellationReason: row.cancellation_reason ?? undefined,
     createdAt: row.created_at,
   };
 }
@@ -191,12 +193,12 @@ class AppointmentService {
     return fromAppointmentRow(data as AppointmentRow);
   }
 
-  async cancelAppointment(appointment: Appointment, by: 'CLIENT' | 'PROVIDER'): Promise<Appointment> {
+  async cancelAppointment(appointment: Appointment, by: 'CLIENT' | 'PROVIDER', reason?: string): Promise<Appointment> {
     if (by === 'CLIENT') await this.checkCancellationPolicy(appointment, 'cancelar');
 
     const { data, error } = await supabase
       .from('appointments')
-      .update({ status: 'CANCELLED', cancelled_by: by, cancelled_at: new Date().toISOString() })
+      .update({ status: 'CANCELLED', cancelled_by: by, cancelled_at: new Date().toISOString(), cancellation_reason: reason?.trim() || null })
       .eq('id', appointment.id)
       .in('status', ['PENDING', 'CONFIRMED'])
       .select()
