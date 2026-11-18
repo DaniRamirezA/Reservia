@@ -210,8 +210,16 @@ function ProviderDashboardContent() {
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (businessProfile.businessName.trim().length < 2 || !businessProfile.city.trim() || !businessProfile.address.trim()) {
-      setFeedbackMessage({ type: 'error', text: 'Completa el nombre del negocio, la ciudad y la dirección.' });
+    if (businessProfile.businessName.trim().length < 2) {
+      setFeedbackMessage({ type: 'error', text: 'No se guardaron los cambios: escribe el nombre del negocio (mínimo 2 caracteres).' });
+      return;
+    }
+    if (!businessProfile.city.trim()) {
+      setFeedbackMessage({ type: 'error', text: 'No se guardaron los cambios: completa la ciudad del negocio.' });
+      return;
+    }
+    if (!businessProfile.address.trim()) {
+      setFeedbackMessage({ type: 'error', text: 'No se guardaron los cambios: la dirección es obligatoria. Completa este campo e inténtalo de nuevo.' });
       return;
     }
     if (businessProfile.phone.trim() && !/^[+\\d\\s()-]{7,20}$/.test(businessProfile.phone.trim())) {
@@ -943,7 +951,7 @@ function ProviderDashboardContent() {
 
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                    Dirección
+                    Dirección <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -951,8 +959,11 @@ function ProviderDashboardContent() {
                     onChange={(e) =>
                       setBusinessProfile({ ...businessProfile, address: e.target.value })
                     }
+                    required
+                    aria-label="Dirección del negocio, campo obligatorio"
                     className="w-full bg-[#fafafa] border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#025a4e]"
                   />
+                  <p className="mt-1.5 text-[10px] text-slate-400">Campo obligatorio para guardar los cambios del perfil.</p>
                 </div>
               </div>
             </div>
