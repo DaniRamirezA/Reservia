@@ -306,7 +306,7 @@ function ProviderDashboardContent() {
     groups[apt.serviceName].count += 1;
     return groups;
   }, {})).sort((a, b) => b.count - a.count);
-  const reportMaxDemand = Math.max(1, ...reportDemand.map((item) => item.count));
+  const reportTotalDemand = reportDemand.reduce((total, item) => total + item.count, 0);
   const reportMonthLabel = reportMonthStart.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
 
   const businessInitials = (user?.businessName || user?.name || '')
@@ -789,7 +789,7 @@ function ProviderDashboardContent() {
 
             <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
               <h3 className="mb-1 font-serif text-sm font-bold text-slate-900">Servicios más demandados</h3>
-              <p className="mb-5 text-xs text-slate-400">Cantidad de reservas no canceladas por servicio durante el mes</p>
+              <p className="mb-5 text-xs text-slate-400">Distribución de reservas no canceladas por servicio durante el mes</p>
               {reportDemand.length === 0 ? (
                 <p className="rounded-xl bg-slate-50 p-5 text-center text-xs text-slate-500">Todavía no hay reservas registradas para este mes.</p>
               ) : (
@@ -798,10 +798,10 @@ function ProviderDashboardContent() {
                     <div key={item.name}>
                       <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
                         <span className="font-semibold text-slate-800">{item.name}</span>
-                        <span className="shrink-0 font-semibold text-[#025a4e]">{item.count} {item.count === 1 ? 'reserva' : 'reservas'}</span>
+                        <span className="shrink-0 font-semibold text-[#025a4e]">{item.count} {item.count === 1 ? 'reserva' : 'reservas'} · {Math.round((item.count / reportTotalDemand) * 100)}%</span>
                       </div>
                       <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
-                        <div className="h-full rounded-full bg-[#025a4e]" style={{ width: `${Math.round((item.count / reportMaxDemand) * 100)}%` }} />
+                        <div className="h-full rounded-full bg-[#025a4e]" style={{ width: `${Math.round((item.count / reportTotalDemand) * 100)}%` }} />
                       </div>
                     </div>
                   ))}
