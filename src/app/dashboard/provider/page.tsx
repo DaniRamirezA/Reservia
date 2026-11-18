@@ -768,27 +768,27 @@ function ProviderDashboardContent() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
               <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase text-slate-400">Ingresos de citas completadas</p>
-                <p className="mt-2 font-serif text-2xl font-bold text-slate-900">${reportRevenue.toLocaleString('es-CO')}</p>
+                <p className="text-xs font-semibold uppercase text-slate-400">Ingresos de citas completadas</p>
+                <p className="mt-2 font-serif text-3xl font-bold text-slate-900">${reportRevenue.toLocaleString('es-CO')}</p>
               </div>
               <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase text-slate-400">Servicios completados</p>
-                <p className="mt-2 font-serif text-2xl font-bold text-slate-900">{reportCompleted.length}</p>
+                <p className="text-xs font-semibold uppercase text-slate-400">Servicios completados</p>
+                <p className="mt-2 font-serif text-3xl font-bold text-slate-900">{reportCompleted.length}</p>
               </div>
               <div className="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase text-slate-400">Pendientes de atención</p>
-                <p className="mt-2 font-serif text-2xl font-bold text-amber-600">{reportPendingAttention.length}</p>
-                <p className="mt-1 text-[11px] text-slate-400">Reservas aún no atendidas durante este mes</p>
+                <p className="text-xs font-semibold uppercase text-slate-400">Pendientes de atención</p>
+                <p className="mt-2 font-serif text-3xl font-bold text-amber-600">{reportPendingAttention.length}</p>
+                <p className="mt-1 text-xs text-slate-400">Reservas aún no atendidas durante este mes</p>
               </div>
               <div className="rounded-2xl border border-rose-100 bg-white p-5 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase text-slate-400">Citas canceladas</p>
-                <p className="mt-2 font-serif text-2xl font-bold text-rose-600">{reportMonthCancelled.length}</p>
-                <p className="mt-1 text-[11px] text-slate-400">Canceladas durante este mes</p>
+                <p className="text-xs font-semibold uppercase text-slate-400">Citas canceladas</p>
+                <p className="mt-2 font-serif text-3xl font-bold text-rose-600">{reportMonthCancelled.length}</p>
+                <p className="mt-1 text-xs text-slate-400">Canceladas durante este mes</p>
               </div>
 <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase text-slate-400">Ocupación estimada de agenda</p>
-                <p className="mt-2 font-serif text-2xl font-bold text-slate-900">{reportOccupancy}%</p>
-                <p className="mt-1 text-[11px] text-slate-400">Minutos de citas no canceladas / minutos disponibles del mes</p>
+                <p className="text-xs font-semibold uppercase text-slate-400">Ocupación estimada de agenda</p>
+                <p className="mt-2 font-serif text-3xl font-bold text-slate-900">{reportOccupancy}%</p>
+                <p className="mt-1 text-xs text-slate-400">Minutos de citas no canceladas / minutos disponibles del mes</p>
               </div>
             </div>
 
