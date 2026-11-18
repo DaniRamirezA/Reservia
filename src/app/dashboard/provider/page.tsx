@@ -783,7 +783,7 @@ function ProviderDashboardContent() {
 <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
                 <p className="text-[11px] font-semibold uppercase text-slate-400">Ocupación estimada de agenda</p>
                 <p className="mt-2 font-serif text-2xl font-bold text-slate-900">{reportOccupancy}%</p>
-                <p className="mt-1 text-[11px] text-slate-400">Minutos reservados / minutos de horario configurado</p>
+                <p className="mt-1 text-[11px] text-slate-400">Minutos de citas no canceladas / minutos disponibles del mes</p>
               </div>
             </div>
 
@@ -1131,6 +1131,7 @@ function ProviderDashboardContent() {
               <div className="grid grid-cols-2 gap-4">
                 <div><p className="text-xs text-slate-400">Fecha de la cita</p><p className="font-medium text-slate-800">{formatDate(detailAppointment.date)} · {formatTime(detailAppointment.time)}</p></div>
                 <div><p className="text-xs text-slate-400">Estado</p><p className="font-medium text-slate-800">{STATUS_LABEL[effectiveStatus(detailAppointment)]}</p></div>
+                <div><p className="text-xs text-slate-400">Duración</p><p className="font-medium text-slate-800">{detailAppointment.durationMinutes} minutos</p></div>
               </div>
               {detailAppointment.status === 'CANCELLED' && (
                 <div className="grid grid-cols-2 gap-4 rounded-xl bg-rose-50/70 p-3">
