@@ -374,7 +374,9 @@ function ProviderDashboardContent() {
       <div className="mx-auto max-w-5xl">
         {feedbackMessage && (
           <div
-            className={`mb-6 flex items-center justify-between p-4 rounded-xl text-xs font-semibold transition-all ${
+            role={feedbackMessage.type === 'success' ? 'status' : 'alert'}
+            aria-live="polite"
+            className={`fixed bottom-5 right-5 z-[100] flex w-[calc(100%-2.5rem)] max-w-md items-center justify-between gap-4 p-4 rounded-xl text-xs font-semibold shadow-xl transition-all ${
               feedbackMessage.type === 'success'
                 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                 : 'bg-rose-50 text-rose-800 border border-rose-200'
@@ -886,7 +888,7 @@ function ProviderDashboardContent() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                    Nombre del negocio
+                    Nombre del negocio <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -894,6 +896,8 @@ function ProviderDashboardContent() {
                     onChange={(e) =>
                       setBusinessProfile({ ...businessProfile, businessName: e.target.value })
                     }
+                    required
+                    aria-label="Nombre del negocio, campo obligatorio"
                     className="w-full bg-[#fafafa] border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#025a4e]"
                   />
                 </div>
@@ -922,7 +926,7 @@ function ProviderDashboardContent() {
 
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                      Ciudad
+                      Ciudad <span className="text-rose-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -930,6 +934,8 @@ function ProviderDashboardContent() {
                       onChange={(e) =>
                         setBusinessProfile({ ...businessProfile, city: e.target.value })
                       }
+                      required
+                      aria-label="Ciudad del negocio, campo obligatorio"
                       className="w-full bg-[#fafafa] border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#025a4e]"
                     />
                   </div>
