@@ -773,7 +773,7 @@ function ProviderDashboardContent() {
               <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
                 <p className="text-[11px] font-semibold uppercase text-slate-400">Citas completadas</p>
                 <p className="mt-2 font-serif text-2xl font-bold text-slate-900">{reportCompleted.length}</p>
-                <p className="mt-1 text-[11px] text-slate-400">{reportMonthAppointments.length} reservas no canceladas en el mes</p>
+                <p className="mt-1 text-[11px] text-slate-400">Reservas no canceladas durante el mes: {reportMonthAppointments.length}</p>
               </div>
               <div className="rounded-2xl border border-rose-100 bg-white p-5 shadow-sm">
                 <p className="text-[11px] font-semibold uppercase text-slate-400">Citas canceladas</p>
