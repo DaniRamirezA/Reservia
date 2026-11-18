@@ -766,7 +766,7 @@ function ProviderDashboardContent() {
               <span className="rounded-xl border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold capitalize text-[#025a4e]">{reportMonthLabel}</span>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
               <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
                 <p className="text-[11px] font-semibold uppercase text-slate-400">Ingresos de citas completadas</p>
                 <p className="mt-2 font-serif text-2xl font-bold text-slate-900">${reportRevenue.toLocaleString('es-CO')}</p>
