@@ -778,17 +778,14 @@ function ProviderDashboardContent() {
               <div className="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm">
                 <p className="text-xs font-semibold uppercase text-slate-400">Pendientes de atención</p>
                 <p className="mt-2 font-serif text-3xl font-bold text-amber-600">{reportPendingAttention.length}</p>
-                <p className="mt-1 text-xs text-slate-400">Reservas aún no atendidas durante este mes</p>
               </div>
               <div className="rounded-2xl border border-rose-100 bg-white p-5 shadow-sm">
                 <p className="text-xs font-semibold uppercase text-slate-400">Citas canceladas</p>
                 <p className="mt-2 font-serif text-3xl font-bold text-rose-600">{reportMonthCancelled.length}</p>
-                <p className="mt-1 text-xs text-slate-400">Canceladas durante este mes</p>
               </div>
 <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
                 <p className="text-xs font-semibold uppercase text-slate-400">Ocupación estimada de agenda</p>
                 <p className="mt-2 font-serif text-3xl font-bold text-slate-900">{reportOccupancy}%</p>
-                <p className="mt-1 text-xs text-slate-400">Minutos de citas no canceladas / minutos disponibles del mes</p>
               </div>
             </div>
 
