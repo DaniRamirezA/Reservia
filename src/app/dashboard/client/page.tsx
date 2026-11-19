@@ -798,62 +798,6 @@ function ClientDashboardContent() {
                   </div>
                 </div>
 
-                <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
-                  <h3 className="font-serif text-base font-bold text-slate-900 mb-4">
-                    Preferencias de notificación
-                  </h3>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setEmailReminders(!emailReminders)}
-                        className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ease-in-out ${
-                          emailReminders ? 'bg-[#025a4e]' : 'bg-slate-200'
-                        }`}
-                      >
-                        <div
-                          className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
-                            emailReminders ? 'translate-x-5' : 'translate-x-0'
-                          }`}
-                        />
-                      </button>
-                      <div>
-                        <p className="text-xs font-bold text-slate-900 leading-tight">
-                          Recordatorios por correo
-                        </p>
-                        <p className="text-[11px] text-slate-400 font-normal mt-0.5">
-                          Recibe confirmaciones y recordatorios de tus citas vía email
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setSmsReminders(!smsReminders)}
-                        className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ease-in-out ${
-                          smsReminders ? 'bg-[#025a4e]' : 'bg-slate-200'
-                        }`}
-                      >
-                        <div
-                          className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
-                            smsReminders ? 'translate-x-5' : 'translate-x-0'
-                          }`}
-                        />
-                      </button>
-                      <div>
-                        <p className="text-xs font-bold text-slate-900 leading-tight">
-                          Recordatorios por SMS
-                        </p>
-                        <p className="text-[11px] text-slate-400 font-normal mt-0.5">
-                          Recibe mensajes de texto 1 hora antes de cada cita
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
                 <div className="flex justify-end pt-2">
                   <button
                     type="submit"
