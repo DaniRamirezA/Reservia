@@ -79,6 +79,17 @@ function BookingWizardContent() {
     setSelectedTime('');
   };
 
+  const changeVisibleMonth = (month: Date) => {
+    setVisibleMonth(month);
+    const monthDays = days.filter((day) => {
+      const date = parseISODate(day.date);
+      return date.getFullYear() === month.getFullYear() && date.getMonth() === month.getMonth();
+    });
+    const firstAvailable = monthDays.find((day) => day.slots.length > 0);
+    setSelectedDate(firstAvailable?.date ?? monthDays[0]?.date ?? '');
+    setSelectedTime('');
+  };
+
   const handleConfirm = async () => {
     if (!business || !user) return;
 
@@ -288,9 +299,9 @@ function BookingWizardContent() {
                           <div className="mb-3 flex items-center justify-between">
                             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Fecha</span>
                             <div className="flex items-center gap-3">
-                              <button type="button" aria-label="Mes anterior" disabled={!canGoToPreviousMonth} onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1))} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronLeft className="h-4 w-4" /></button>
+                              <button type="button" aria-label="Mes anterior" disabled={!canGoToPreviousMonth} onClick={() => changeVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1))} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronLeft className="h-4 w-4" /></button>
                               <span className="min-w-[130px] text-center text-xs font-semibold capitalize text-slate-700">{visibleMonthLabel}</span>
-                              <button type="button" aria-label="Mes siguiente" disabled={!canGoToNextMonth} onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1))} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronRight className="h-4 w-4" /></button>
+                              <button type="button" aria-label="Mes siguiente" disabled={!canGoToNextMonth} onClick={() => changeVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1))} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronRight className="h-4 w-4" /></button>
                             </div>
                           </div>
                           <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
