@@ -954,8 +954,8 @@ function ProviderDashboardContent() {
                     city={businessProfile.city}
                     required
                     compact
-                    onDepartmentChange={(department) => setBusinessProfile({ ...businessProfile, department })}
-                    onCityChange={(city) => setBusinessProfile({ ...businessProfile, city })}
+                    onDepartmentChange={(department) => setBusinessProfile((current) => ({ ...current, department, city: '' }))}
+                    onCityChange={(city) => setBusinessProfile((current) => ({ ...current, city }))}
                   />
                 </div>
 
