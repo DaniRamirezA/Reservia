@@ -160,7 +160,7 @@ export default function ServiceDetailPage() {
                 <h2 className="text-sm font-bold text-slate-900 mb-3">Próximos horarios disponibles</h2>
                 {nextDaysWithSlots.length === 0 ? (
                   <p className="text-xs text-slate-500 rounded-xl bg-slate-50 border border-slate-100 p-3.5">
-                    No hay horarios disponibles en los próximos 14 días.
+                    No hay horarios disponibles en los próximos seis meses.
                   </p>
                 ) : (
                   <div className="space-y-3">
