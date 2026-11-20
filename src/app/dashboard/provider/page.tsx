@@ -11,6 +11,7 @@ import ScheduleEditor from '@/components/provider/ScheduleEditor';
 import { appointmentService } from '@/services/appointmentService';
 import { serviceService } from '@/services/serviceService';
 import { reviewService, ServiceReview } from '@/services/reviewService';
+import ColombiaLocationFields, { inferDepartment } from '@/components/ui/ColombiaLocationFields';
 import { scheduleService, DayConfig } from '@/services/scheduleService';
 import { Appointment, AppointmentStatus } from '@/types/appointment';
 import { Schedule } from '@/types/schedule';
@@ -130,6 +131,7 @@ function ProviderDashboardContent() {
     businessName: user?.businessName || '',
     category: user?.businessCategory || 'SALUD',
     city: user?.city || '',
+    department: user?.department || inferDepartment(user?.city),
     description: user?.description || '',
     address: user?.address || '',
     email: user?.email || '',
@@ -216,7 +218,7 @@ function ProviderDashboardContent() {
       setFeedbackMessage({ type: 'error', text: 'No se guardaron los cambios: escribe el nombre del negocio (mínimo 2 caracteres).' });
       return;
     }
-    if (!businessProfile.city.trim()) {
+    if (!businessProfile.department.trim() || !businessProfile.city.trim()) {
       setFeedbackMessage({ type: 'error', text: 'No se guardaron los cambios: completa la ciudad del negocio.' });
       return;
     }
@@ -238,6 +240,7 @@ function ProviderDashboardContent() {
         businessName: businessProfile.businessName,
         businessCategory: businessProfile.category,
         city: businessProfile.city,
+        department: businessProfile.department,
         description: businessProfile.description,
         address: businessProfile.address,
         phone: normalizedPhone,
@@ -946,21 +949,14 @@ function ProviderDashboardContent() {
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                      Ciudad <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={businessProfile.city}
-                      onChange={(e) =>
-                        setBusinessProfile({ ...businessProfile, city: e.target.value })
-                      }
-                      required
-                      aria-label="Ciudad del negocio, campo obligatorio"
-                      className="w-full bg-[#fafafa] border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#025a4e]"
-                    />
-                  </div>
+                  <ColombiaLocationFields
+                    department={businessProfile.department}
+                    city={businessProfile.city}
+                    required
+                    compact
+                    onDepartmentChange={(department) => setBusinessProfile({ ...businessProfile, department })}
+                    onCityChange={(city) => setBusinessProfile({ ...businessProfile, city })}
+                  />
                 </div>
 
                 <div>
