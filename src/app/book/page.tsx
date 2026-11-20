@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Check, Star, MapPin, ArrowLeft, AlertCircle } from 'lucide-react';
+import { Check, Star, MapPin, ArrowLeft, AlertCircle, Phone, Globe } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { appointmentService } from '@/services/appointmentService';
@@ -424,8 +424,8 @@ function BookingWizardContent() {
               </div>
 
               <div className="lg:col-span-5 bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.03)] lg:sticky lg:top-28">
-                <div className="w-full h-44 bg-gradient-to-br from-[#eafaf5] to-teal-100 flex items-center justify-center text-6xl">
-                  {categoryEmoji(business.category)}
+                <div className="relative w-full h-44 bg-gradient-to-br from-[#eafaf5] to-teal-100 flex items-center justify-center text-6xl overflow-hidden">
+                  {business.providerAvatarUrl ? <img src={business.providerAvatarUrl} alt={business.providerName} className="h-full w-full object-cover" /> : categoryEmoji(business.category)}
                 </div>
 
                 <div className="p-6">
@@ -437,7 +437,8 @@ function BookingWizardContent() {
                       <span>{business.providerLocation}</span>
                     </div>
                   )}
-                  {business.providerAddress && <div className="mt-1 flex items-start gap-1.5 text-xs text-slate-500"><MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" /><span>{business.providerAddress}</span></div>}
+                  {business.providerAddress && <div className="mt-1 flex items-start gap-1.5 text-xs text-slate-500"><MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" /><span>{business.providerAddress}</span></div>}                  {business.providerPhone && <a href={'tel:' + business.providerPhone} className="mt-2 flex items-center gap-1.5 text-xs text-slate-600 hover:text-[#025a4e]"><Phone className="h-3.5 w-3.5 shrink-0" /><span>{business.providerPhone}</span></a>}
+                  {business.providerWebsite && <a href={'https://' + business.providerWebsite.replace(/^https?:\/\//i, '')} target="_blank" rel="noreferrer" className="mt-1 flex items-center gap-1.5 text-xs text-[#025a4e] hover:underline"><Globe className="h-3.5 w-3.5 shrink-0" /><span>{business.providerWebsite}</span></a>}
 
                   <div className="flex items-center gap-1 text-xs font-semibold text-slate-700 mt-2">
                     <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
