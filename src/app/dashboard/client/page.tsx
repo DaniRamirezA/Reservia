@@ -630,7 +630,10 @@ function ClientDashboardContent() {
                     historyList.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
                       <td className="py-4 px-6 font-bold text-slate-900">
-                        {currentProviderNames[item.providerId] || item.providerName}
+                        <div className="flex items-center gap-2">
+                          {currentProviderAvatars[item.providerId] && <img src={currentProviderAvatars[item.providerId]} alt="" className="h-9 w-9 rounded-full object-cover" />}
+                          <span>{currentProviderNames[item.providerId] || item.providerName}</span>
+                        </div>
                         {currentProviderAddresses[item.providerId] && <span className="mt-1 block font-normal text-slate-500">{currentProviderAddresses[item.providerId]}</span>}
                         {currentProviderPhones[item.providerId] && <span className="mt-1 block font-normal text-slate-500">{currentProviderPhones[item.providerId]}</span>}
                         {currentProviderWebsites[item.providerId] && <a href={'https://' + currentProviderWebsites[item.providerId].replace(/^https?:\/\//i, '')} target="_blank" rel="noreferrer" className="mt-1 block font-normal text-[#025a4e] hover:underline">{currentProviderWebsites[item.providerId]}</a>}
@@ -962,7 +965,10 @@ function ClientDashboardContent() {
               </div>
               <div>
                 <p className="text-xs text-slate-400">Proveedor</p>
-                <p className="font-semibold text-slate-900">{currentProviderNames[detailModalApt.providerId] || detailModalApt.providerName}</p>
+                <div className="flex items-center gap-2">
+                  {currentProviderAvatars[detailModalApt.providerId] && <img src={currentProviderAvatars[detailModalApt.providerId]} alt="" className="h-10 w-10 rounded-full object-cover" />}
+                  <p className="font-semibold text-slate-900">{currentProviderNames[detailModalApt.providerId] || detailModalApt.providerName}</p>
+                </div>
                 {currentProviderAddresses[detailModalApt.providerId] && <p className="mt-1 flex items-start gap-1 text-xs text-slate-500"><MapPin className="mt-0.5 h-3 w-3 shrink-0" />{currentProviderAddresses[detailModalApt.providerId]}</p>}
                 {currentProviderPhones[detailModalApt.providerId] && <p className="mt-1 flex items-center gap-1 text-xs text-slate-500"><Phone className="h-3 w-3" />{currentProviderPhones[detailModalApt.providerId]}</p>}
                 {currentProviderWebsites[detailModalApt.providerId] && <a href={'https://' + currentProviderWebsites[detailModalApt.providerId].replace(/^https?:\/\//i, '')} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-xs text-[#025a4e] hover:underline"><Globe className="h-3 w-3" />{currentProviderWebsites[detailModalApt.providerId]}</a>}
