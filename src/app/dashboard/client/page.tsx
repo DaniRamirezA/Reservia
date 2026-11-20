@@ -187,7 +187,7 @@ function ClientDashboardContent() {
       setFeedbackMessage({ type: 'error', text: 'Ingresa un nombre completo válido (mínimo 3 caracteres).' });
       return;
     }
-    if (profileForm.phone.trim() && !/^[+\\d\\s()-]{7,20}$/.test(profileForm.phone.trim())) {
+    if (profileForm.phone.trim() && !/^[+\d\s()-]{7,20}$/.test(profileForm.phone.trim())) {
       setFeedbackMessage({ type: 'error', text: 'Verifica el formato del número de teléfono.' });
       return;
     }
