@@ -525,24 +525,28 @@ function ClientDashboardContent() {
                     </div>
 
                     <div className="flex flex-col justify-between flex-1 min-w-0">
-                      <div>
-                        <h3 className="font-serif text-base sm:text-lg font-bold text-slate-900 leading-snug">
-                          {currentProviderNames[apt.providerId] || apt.providerName}
-                        </h3>
-                        {currentProviderAddresses[apt.providerId] && <p className="mt-0.5 flex items-start gap-1 text-xs text-slate-500"><MapPin className="mt-0.5 h-3 w-3 shrink-0" />{currentProviderAddresses[apt.providerId]}</p>}
-                        {currentProviderPhones[apt.providerId] && <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500"><Phone className="h-3 w-3 shrink-0" />{currentProviderPhones[apt.providerId]}</p>}
-                        {currentProviderWebsites[apt.providerId] && <a href={'https://' + currentProviderWebsites[apt.providerId].replace(/^https?:\/\//i, '')} target="_blank" rel="noreferrer" className="mt-0.5 inline-flex items-center gap-1 text-xs text-[#025a4e] hover:underline"><Globe className="h-3 w-3 shrink-0" />{currentProviderWebsites[apt.providerId]}</a>}
-                        <p className="text-xs text-slate-400 font-normal mt-0.5">{apt.serviceName}</p>
+                      <div className="min-w-0">
+                        <section>
+                          <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Establecimiento</p>
+                          <h3 className="font-serif text-base sm:text-lg font-bold text-slate-900 leading-snug">
+                            {currentProviderNames[apt.providerId] || apt.providerName}
+                          </h3>
+                          <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1.5">
+                            {currentProviderAddresses[apt.providerId] && <p className="flex items-center gap-1 text-xs text-slate-500"><MapPin className="h-3 w-3 shrink-0" />{currentProviderAddresses[apt.providerId]}</p>}
+                            {currentProviderPhones[apt.providerId] && <a href={'tel:' + currentProviderPhones[apt.providerId]} className="flex items-center gap-1 text-xs text-slate-500 hover:text-[#025a4e]"><Phone className="h-3 w-3 shrink-0" />{currentProviderPhones[apt.providerId]}</a>}
+                            {currentProviderWebsites[apt.providerId] && <a href={'https://' + currentProviderWebsites[apt.providerId].replace(/^https?:\/\//i, '')} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs text-[#025a4e] hover:underline"><Globe className="h-3 w-3 shrink-0" />Sitio web</a>}
+                          </div>
+                        </section>
 
-                        <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 font-normal mt-2">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                          <span>
-                            {formatDate(apt.date)} · {formatTime(apt.time)} · {apt.durationMinutes} min
-                          </span>
-                          <span className="font-bold text-slate-900 ml-1">
-                            ${apt.price.toLocaleString('es-CO')}
-                          </span>
-                        </div>
+                        <section className="mt-3 rounded-xl border border-slate-100 bg-slate-50/80 px-3 py-2.5">
+                          <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Detalle de tu cita</p>
+                          <p className="text-sm font-semibold text-slate-800">{apt.serviceName}</p>
+                          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+                            <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{formatDate(apt.date)} · {formatTime(apt.time)}</span>
+                            <span>{apt.durationMinutes} min</span>
+                            <span className="font-bold text-slate-900">${apt.price.toLocaleString('es-CO')}</span>
+                          </div>
+                        </section>
                       </div>
 
                       <div className="flex items-center gap-2 mt-3.5">
