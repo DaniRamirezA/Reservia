@@ -20,6 +20,7 @@ interface ProfileRow {
   business_category: string | null;
   address: string | null;
   city: string | null;
+  department: string | null;
   document_number: string | null;
   description: string | null;
   website: string | null;
@@ -41,6 +42,7 @@ function fromProfileRow(row: ProfileRow): User {
     businessCategory: row.business_category ?? undefined,
     address: row.address ?? undefined,
     city: row.city ?? undefined,
+    department: row.department ?? undefined,
     documentNumber: row.document_number ?? undefined,
     description: row.description ?? undefined,
     website: row.website ?? undefined,
@@ -60,6 +62,7 @@ function toProfileUpdate(updates: Partial<User>): Record<string, string | null> 
   if (updates.businessCategory !== undefined) row.business_category = updates.businessCategory || null;
   if (updates.address !== undefined) row.address = updates.address || null;
   if (updates.city !== undefined) row.city = updates.city || null;
+  if (updates.department !== undefined) row.department = updates.department || null;
   if (updates.documentNumber !== undefined) row.document_number = updates.documentNumber || null;
   if (updates.description !== undefined) row.description = updates.description || null;
   if (updates.website !== undefined) row.website = updates.website || null;
