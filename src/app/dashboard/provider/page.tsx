@@ -36,6 +36,7 @@ import {
   Star,
   Settings,
   ListTodo,
+  RefreshCw,
 } from 'lucide-react';
 
 type ProviderTabType = 'agenda' | 'servicios' | 'horarios' | 'reportes' | 'opiniones' | 'perfil';
@@ -83,6 +84,7 @@ function ProviderDashboardContent() {
   });
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [isRefreshingReports, setIsRefreshingReports] = useState(false);
   const [isLoadingAppointments, setIsLoadingAppointments] = useState(true);
   const [appointmentToCancel, setAppointmentToCancel] = useState<Appointment | null>(null);
   const [detailAppointment, setDetailAppointment] = useState<Appointment | null>(null);
@@ -132,6 +134,20 @@ function ProviderDashboardContent() {
       .catch((err: Error) => setLoadError(err.message))
       .finally(() => setIsLoadingReviews(false));
   }, [userId, isLoadingServices, services]);
+
+  const handleRefreshReports = async () => {
+    if (!userId || isRefreshingReports) return;
+    setIsRefreshingReports(true);
+    try {
+      const latestAppointments = await appointmentService.getProviderAppointments(userId);
+      setAppointments(latestAppointments);
+      setFeedbackMessage({ type: 'success', text: 'Los reportes se actualizaron correctamente.' });
+    } catch (err) {
+      setFeedbackMessage({ type: 'error', text: err instanceof Error ? err.message : 'No se pudieron actualizar los reportes.' });
+    } finally {
+      setIsRefreshingReports(false);
+    }
+  };
 
   const [businessProfile, setBusinessProfile] = useState({
     businessName: user?.businessName || '',
@@ -794,17 +810,28 @@ function ProviderDashboardContent() {
                 <h2 className="font-serif text-base font-bold text-slate-900">Reportes y métricas del negocio</h2>
                 <p className="text-xs text-slate-400 mt-0.5">Indicadores calculados con las reservas del mes seleccionado</p>
               </div>
-              <label className="flex items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-[#025a4e]">
-                <CalendarDays className="h-4 w-4" />
-                <span className="capitalize">{reportMonthLabel}</span>
-                <input
-                  type="month"
-                  value={reportMonthValue}
-                  onChange={(event) => setReportMonthValue(event.target.value)}
-                  aria-label="Seleccionar mes de los reportes"
-                  className="max-w-[28px] cursor-pointer bg-transparent text-transparent outline-none [color-scheme:light]"
-                />
-              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleRefreshReports}
+                  disabled={isRefreshingReports}
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isRefreshingReports ? 'animate-spin' : ''}`} />
+                  {isRefreshingReports ? 'Actualizando...' : 'Actualizar'}
+                </button>
+                <label className="flex items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-[#025a4e]">
+                  <CalendarDays className="h-4 w-4" />
+                  <span className="capitalize">{reportMonthLabel}</span>
+                  <input
+                    type="month"
+                    value={reportMonthValue}
+                    onChange={(event) => setReportMonthValue(event.target.value)}
+                    aria-label="Seleccionar mes de los reportes"
+                    className="max-w-[28px] cursor-pointer bg-transparent text-transparent outline-none [color-scheme:light]"
+                  />
+                </label>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -851,7 +878,7 @@ function ProviderDashboardContent() {
                 </div>
               )}
             </div>
-            <p className="text-[11px] text-slate-400">Los reportes se recalculan al cargar las reservas del proveedor. La ocupación se estima usando los horarios semanales configurados y las duraciones de las reservas; no representa disponibilidad en tiempo real del servidor.</p>
+            <p className="text-[11px] text-slate-400">Los reportes se calculan con las reservas cargadas. Usa «Actualizar» para consultar los cambios más recientes. La ocupación se estima usando los horarios semanales configurados y las duraciones de las reservas; no representa disponibilidad en tiempo real del servidor.</p>
           </div>
         )}
 
