@@ -8,6 +8,7 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import { appointmentService } from '@/services/appointmentService';
 import { authService } from '@/services/authService';
 import { reviewService } from '@/services/reviewService';
+import ColombiaLocationFields, { inferDepartment } from '@/components/ui/ColombiaLocationFields';
 import { Appointment, DayAvailability } from '@/types/appointment';
 import { formatDate, formatTime, hoursUntil, isPast, parseISODate } from '@/lib/agenda';
 import {
@@ -73,6 +74,7 @@ function ClientDashboardContent() {
     phone: user?.phone || '',
     birthDate: user?.birthDate || '',
     city: user?.city || '',
+    department: user?.department || inferDepartment(user?.city),
     gender: user?.gender || '',
   });
 
@@ -202,6 +204,7 @@ function ClientDashboardContent() {
         phone: normalizedPhone,
         birthDate: profileForm.birthDate,
         city: profileForm.city,
+        department: profileForm.department,
         gender: profileForm.gender,
       });
       setFeedbackMessage({
@@ -768,19 +771,12 @@ function ClientDashboardContent() {
                         </div>
                       </div>
 
-                      <div>
-                        <label className="block text-[11px] font-medium text-slate-600 mb-1.5">
-                          Ciudad
-                        </label>
-                        <input
-                          type="text"
-                          value={profileForm.city}
-                          onChange={(e) =>
-                            setProfileForm({ ...profileForm, city: e.target.value })
-                          }
-                          className="w-full bg-[#fafafa] border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#025a4e]"
-                        />
-                      </div>
+                      <ColombiaLocationFields
+                        department={profileForm.department}
+                        city={profileForm.city}
+                        onDepartmentChange={(department) => setProfileForm({ ...profileForm, department })}
+                        onCityChange={(city) => setProfileForm({ ...profileForm, city })}
+                      />
                     </div>
 
                     <div>
