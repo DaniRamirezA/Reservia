@@ -83,7 +83,7 @@ export default function NotificationBell() {
                 </div>
                 <p className="mt-1 text-xs text-slate-700">{item.business_name}</p>
                 <p className="text-xs text-slate-500">{item.service_name} · {formatDate(item.appointment_date)} · {formatTime(item.appointment_time)}</p>
-                <p className="mt-1 text-[11px] text-slate-500">Canceló: {item.cancelled_by === 'CLIENT' ? 'Cliente' : 'Proveedor'}</p>
+                <p className="mt-1 text-[11px] text-slate-500">Canceló: {item.cancelled_by_name} ({item.cancelled_by === 'CLIENT' ? 'Cliente' : 'Proveedor'})</p>
                 {item.cancellation_reason && <p className="mt-1 text-[11px] text-slate-500">Motivo: {item.cancellation_reason}</p>}
                 <p className="mt-1 text-[10px] text-slate-400">{new Date(item.created_at).toLocaleString('es-CO')}</p>
               </button>
