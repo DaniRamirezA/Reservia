@@ -800,9 +800,8 @@ function ClientDashboardContent() {
                             onChange={(e) =>
                               setProfileForm({ ...profileForm, birthDate: e.target.value })
                             }
-                            className="w-full bg-[#fafafa] border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#025a4e] pr-10"
+                            className="w-full bg-[#fafafa] border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#025a4e]"
                           />
-                          <Calendar className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                         </div>
                       </div>
 
