@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import AuthGuard from '@/components/auth/AuthGuard';
+import NotificationBell from '@/components/ui/NotificationBell';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import ServiceFormModal from '@/components/provider/ServiceFormModal';
 import ScheduleEditor from '@/components/provider/ScheduleEditor';
@@ -467,12 +468,15 @@ function ProviderDashboardContent() {
               </p>
             </div>
 
-            <Link
-              href="/services"
-              className="text-xs text-slate-400 hover:text-[#025a4e] transition-colors self-start sm:self-auto font-medium"
-            >
-              Ver como cliente →
-            </Link>
+            <div className="flex items-center gap-3 self-start sm:self-auto">
+              <NotificationBell />
+              <Link
+                href="/services"
+                className="text-xs text-slate-400 hover:text-[#025a4e] transition-colors font-medium"
+              >
+                Ver como cliente →
+              </Link>
+            </div>
           </div>
         </div>
 
