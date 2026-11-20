@@ -49,6 +49,7 @@ function ClientDashboardContent() {
   };
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [currentProviderNames, setCurrentProviderNames] = useState<Record<string, string>>({});
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
 
@@ -100,6 +101,29 @@ function ClientDashboardContent() {
   }, [userId]);
 
   useEffect(() => {
+    const providerIds = [...new Set(appointments.map((appointment) => appointment.providerId))];
+    if (providerIds.length === 0) return;
+
+    let cancelled = false;
+    supabase
+      .from('services')
+      .select('provider_id, provider_name')
+      .in('provider_id', providerIds)
+      .then(({ data, error }) => {
+        if (cancelled || error || !data) return;
+        const names: Record<string, string> = {};
+        for (const service of data) {
+          if (service.provider_name && !names[service.provider_id]) {
+            names[service.provider_id] = service.provider_name;
+          }
+        }
+        setCurrentProviderNames(names);
+      });
+
+    return () => { cancelled = true; };
+  }, [appointments]);
+
+  useEffect(() => {
     if (!userId) return;
     reviewService.getReviewedAppointmentIds(userId)
       .then(setReviewedAppointmentIds)
@@ -123,7 +147,7 @@ function ClientDashboardContent() {
       setAppointments((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
       setFeedbackMessage({
         type: 'success',
-        text: `Tu cita en ${cancelModalApt.providerName} fue cancelada y el horario quedó libre.`,
+        text: `Tu cita en ${currentProviderNames[cancelModalApt.providerId] || cancelModalApt.providerName} fue cancelada y el horario quedó libre.`,
       });
       setCancelModalApt(null);
     } catch (err) {
@@ -486,7 +510,7 @@ function ClientDashboardContent() {
                     <div className="flex flex-col justify-between flex-1 min-w-0">
                       <div>
                         <h3 className="font-serif text-base sm:text-lg font-bold text-slate-900 leading-snug">
-                          {apt.providerName}
+                          {currentProviderNames[apt.providerId] || apt.providerName}
                         </h3>
                         <p className="text-xs text-slate-400 font-normal mt-0.5">{apt.serviceName}</p>
 
@@ -586,7 +610,7 @@ function ClientDashboardContent() {
                     historyList.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
                       <td className="py-4 px-6 font-bold text-slate-900">
-                        {item.providerName}
+                        {currentProviderNames[item.providerId] || item.providerName}
                       </td>
 
                       <td className="py-4 px-6 text-slate-400 font-normal">
@@ -915,7 +939,7 @@ function ClientDashboardContent() {
               </div>
               <div>
                 <p className="text-xs text-slate-400">Proveedor</p>
-                <p className="font-semibold text-slate-900">{detailModalApt.providerName}</p>
+                <p className="font-semibold text-slate-900">{currentProviderNames[detailModalApt.providerId] || detailModalApt.providerName}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -1057,7 +1081,7 @@ function ClientDashboardContent() {
             <p className="text-xs text-slate-500 mb-1">
               Cita actual de{' '}
               <strong className="text-slate-800 font-semibold">{rescheduleModalApt.serviceName}</strong> en{' '}
-              <strong className="text-slate-800 font-semibold">{rescheduleModalApt.providerName}</strong>:{' '}
+              <strong className="text-slate-800 font-semibold">{currentProviderNames[rescheduleModalApt.providerId] || rescheduleModalApt.providerName}</strong>:{' '}
               {formatDate(rescheduleModalApt.date)} a las {formatTime(rescheduleModalApt.time)}.
             </p>
             <p className="text-[11px] text-slate-400 mb-4">
