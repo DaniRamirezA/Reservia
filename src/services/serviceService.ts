@@ -22,6 +22,7 @@ interface ServiceRow {
   tags: string[] | null;
   is_active: boolean;
   created_at: string;
+  reviews?: { rating: number }[];
 }
 
 function fromServiceRow(row: ServiceRow): Service {
@@ -40,8 +41,8 @@ function fromServiceRow(row: ServiceRow): Service {
     providerWebsite: row.provider_website ?? undefined,
     providerAvatarUrl: row.provider_avatar_url ?? undefined,
     imageUrl: row.image_url ?? undefined,
-    rating: Number(row.rating),
-    reviewsCount: row.review_count,
+    rating: row.reviews ? (row.reviews.length ? row.reviews.reduce((sum, review) => sum + Number(review.rating), 0) / row.reviews.length : 0) : Number(row.rating),
+    reviewsCount: row.reviews ? row.reviews.length : row.review_count,
     tags: row.tags ?? undefined,
     isActive: row.is_active,
     createdAt: row.created_at,
@@ -61,7 +62,7 @@ class ServiceService {
   async getAllServices(): Promise<Service[]> {
     const { data, error } = await supabase
       .from('services')
-      .select('*')
+      .select('*, reviews(rating)')
       .eq('is_active', true)
       .order('created_at', { ascending: false });
     if (error) throw new Error(error.message);
