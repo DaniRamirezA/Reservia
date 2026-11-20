@@ -15,6 +15,7 @@ interface ServiceRow {
   review_count: number;
   image_url: string | null;
   location: string | null;
+  provider_address: string | null;
   tags: string[] | null;
   is_active: boolean;
   created_at: string;
@@ -31,6 +32,7 @@ function fromServiceRow(row: ServiceRow): Service {
     providerId: row.provider_id,
     providerName: row.provider_name,
     providerLocation: row.location ?? undefined,
+    providerAddress: row.provider_address ?? undefined,
     imageUrl: row.image_url ?? undefined,
     rating: Number(row.rating),
     reviewsCount: row.review_count,
@@ -93,7 +95,8 @@ class ServiceService {
         category: form.category,
         price: form.price,
         duration_minutes: form.durationMinutes,
-        location: provider.city ?? null,
+        location: provider.city && provider.department ? `${provider.city}, ${provider.department}` : provider.city ?? null,
+        provider_address: provider.address ?? null,
         is_active: true,
       })
       .select()
