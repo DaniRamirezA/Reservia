@@ -9,6 +9,9 @@ export interface Service {
   providerName: string;
   providerLocation?: string;
   providerAddress?: string;
+  providerPhone?: string;
+  providerWebsite?: string;
+  providerAvatarUrl?: string;
   imageUrl?: string;
   rating: number;
   reviewsCount: number;
