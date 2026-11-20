@@ -276,7 +276,9 @@ function ClientDashboardContent() {
       <div className="mx-auto max-w-4xl">
         {feedbackMessage && (
           <div
-            className={`mb-6 flex items-center justify-between p-4 rounded-xl text-xs font-semibold transition-all ${
+            role={feedbackMessage.type === 'success' ? 'status' : 'alert'}
+            aria-live="polite"
+            className={`fixed bottom-5 right-5 z-[100] flex w-[calc(100%-2.5rem)] max-w-md items-center justify-between gap-4 p-4 rounded-xl text-xs font-semibold shadow-xl transition-all ${
               feedbackMessage.type === 'success'
                 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                 : 'bg-rose-50 text-rose-800 border border-rose-200'
