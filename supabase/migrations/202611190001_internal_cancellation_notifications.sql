@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS public.notifications (
   appointment_date DATE NOT NULL,
   appointment_time TIME NOT NULL,
   cancelled_by TEXT NOT NULL CHECK (cancelled_by IN ('CLIENT', 'PROVIDER')),
+  cancelled_by_name TEXT NOT NULL,
   cancellation_reason TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   read_at TIMESTAMPTZ
@@ -59,6 +60,7 @@ BEGIN
       appointment_date,
       appointment_time,
       cancelled_by,
+      cancelled_by_name,
       cancellation_reason
     ) VALUES (
       target_user,
@@ -68,6 +70,7 @@ BEGIN
       NEW.date,
       NEW.time,
       NEW.cancelled_by,
+      CASE WHEN NEW.cancelled_by = 'CLIENT' THEN COALESCE(NEW.client_name, 'Cliente') ELSE COALESCE(NEW.provider_name, 'Proveedor') END,
       NULLIF(BTRIM(NEW.cancellation_reason), '')
     );
   END IF;
