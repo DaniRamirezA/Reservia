@@ -6,6 +6,7 @@ import HeroSection from '@/components/home/HeroSection';
 import StatsBanner from '@/components/home/StatsBanner';
 import CategoriesSection from '@/components/home/CategoriesSection';
 import HowItWorksSection from '@/components/home/HowItWorksSection';
+import TestimonialsSection from '@/components/home/TestimonialsSection';
 import ProviderCtaBanner from '@/components/home/ProviderCtaBanner';
 
 export default function HomePage() {
@@ -28,6 +29,9 @@ export default function HomePage() {
 
       {/* 4. Sección "¿Cómo funciona?" con los 3 pasos numerados */}
       <HowItWorksSection />
+
+      {/* 5. Sección de testimonios */}
+      <TestimonialsSection />
 
       {/* Banner "¿Eres proveedor de servicios?" */}
       <ProviderCtaBanner />
