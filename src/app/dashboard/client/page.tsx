@@ -50,6 +50,7 @@ function ClientDashboardContent() {
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [currentProviderNames, setCurrentProviderNames] = useState<Record<string, string>>({});
+  const [currentProviderAddresses, setCurrentProviderAddresses] = useState<Record<string, string>>({});
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
 
@@ -106,18 +107,19 @@ function ClientDashboardContent() {
 
     let cancelled = false;
     supabase
-      .from('services')
-      .select('provider_id, provider_name')
-      .in('provider_id', providerIds)
+      .from('profiles')
+      .select('id, business_name, name, address')
+      .in('id', providerIds)
       .then(({ data, error }) => {
         if (cancelled || error || !data) return;
         const names: Record<string, string> = {};
-        for (const service of data) {
-          if (service.provider_name && !names[service.provider_id]) {
-            names[service.provider_id] = service.provider_name;
-          }
+        const addresses: Record<string, string> = {};
+        for (const profile of data) {
+          names[profile.id] = profile.business_name || profile.name;
+          if (profile.address?.trim()) addresses[profile.id] = profile.address.trim();
         }
         setCurrentProviderNames(names);
+        setCurrentProviderAddresses(addresses);
       });
 
     return () => { cancelled = true; };
@@ -512,6 +514,7 @@ function ClientDashboardContent() {
                         <h3 className="font-serif text-base sm:text-lg font-bold text-slate-900 leading-snug">
                           {currentProviderNames[apt.providerId] || apt.providerName}
                         </h3>
+                        {currentProviderAddresses[apt.providerId] && <p className="mt-0.5 flex items-start gap-1 text-xs text-slate-500"><MapPin className="mt-0.5 h-3 w-3 shrink-0" />{currentProviderAddresses[apt.providerId]}</p>}
                         <p className="text-xs text-slate-400 font-normal mt-0.5">{apt.serviceName}</p>
 
                         <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 font-normal mt-2">
@@ -611,6 +614,7 @@ function ClientDashboardContent() {
                     <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
                       <td className="py-4 px-6 font-bold text-slate-900">
                         {currentProviderNames[item.providerId] || item.providerName}
+                        {currentProviderAddresses[item.providerId] && <span className="mt-1 block font-normal text-slate-500">{currentProviderAddresses[item.providerId]}</span>}
                       </td>
 
                       <td className="py-4 px-6 text-slate-400 font-normal">
@@ -940,6 +944,7 @@ function ClientDashboardContent() {
               <div>
                 <p className="text-xs text-slate-400">Proveedor</p>
                 <p className="font-semibold text-slate-900">{currentProviderNames[detailModalApt.providerId] || detailModalApt.providerName}</p>
+                {currentProviderAddresses[detailModalApt.providerId] && <p className="mt-1 flex items-start gap-1 text-xs text-slate-500"><MapPin className="mt-0.5 h-3 w-3 shrink-0" />{currentProviderAddresses[detailModalApt.providerId]}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
