@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Check, Star, MapPin, ArrowLeft, AlertCircle, Phone, Globe } from 'lucide-react';
+import { Check, Star, MapPin, ArrowLeft, AlertCircle, Phone, Globe, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { appointmentService } from '@/services/appointmentService';
@@ -31,6 +31,10 @@ function BookingWizardContent() {
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [selectedDate, setSelectedDate] = useState('');
+  const [visibleMonth, setVisibleMonth] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
   const [selectedTime, setSelectedTime] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,6 +62,17 @@ function BookingWizardContent() {
 
   const slotsOfSelectedDay = days.find((d) => d.date === selectedDate)?.slots ?? [];
   const hasAnySlot = days.some((d) => d.slots.length > 0);
+  const visibleDays = days.filter((day) => {
+    const date = parseISODate(day.date);
+    return date.getFullYear() === visibleMonth.getFullYear() && date.getMonth() === visibleMonth.getMonth();
+  });
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const lastBookableDate = new Date(today);
+  lastBookableDate.setMonth(lastBookableDate.getMonth() + 6);
+  const canGoToPreviousMonth = visibleMonth.getFullYear() > today.getFullYear() || visibleMonth.getMonth() > today.getMonth() && visibleMonth.getFullYear() === today.getFullYear();
+  const canGoToNextMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1) <= new Date(lastBookableDate.getFullYear(), lastBookableDate.getMonth(), 1);
+  const visibleMonthLabel = visibleMonth.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
 
   const chooseDate = (date: string) => {
     setSelectedDate(date);
@@ -265,16 +280,21 @@ function BookingWizardContent() {
 
                     {!hasAnySlot ? (
                       <div className="rounded-xl bg-amber-50 border border-amber-100 p-4 text-xs text-amber-700">
-                        Este proveedor no tiene horarios disponibles en los próximos 14 días.
+                        Este proveedor no tiene horarios disponibles dentro de los próximos seis meses.
                       </div>
                     ) : (
                       <>
                         <div>
-                          <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block mb-2.5">
-                            Fecha
-                          </span>
+                          <div className="mb-3 flex items-center justify-between">
+                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Fecha</span>
+                            <div className="flex items-center gap-3">
+                              <button type="button" aria-label="Mes anterior" disabled={!canGoToPreviousMonth} onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1))} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronLeft className="h-4 w-4" /></button>
+                              <span className="min-w-[130px] text-center text-xs font-semibold capitalize text-slate-700">{visibleMonthLabel}</span>
+                              <button type="button" aria-label="Mes siguiente" disabled={!canGoToNextMonth} onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1))} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronRight className="h-4 w-4" /></button>
+                            </div>
+                          </div>
                           <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
-                            {days.map((day) => {
+                            {visibleDays.map((day) => {
                               const date = parseISODate(day.date);
                               const isSelected = selectedDate === day.date;
                               const isFull = day.slots.length === 0;
