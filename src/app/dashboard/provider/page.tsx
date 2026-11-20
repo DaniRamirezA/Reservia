@@ -11,6 +11,7 @@ import ScheduleEditor from '@/components/provider/ScheduleEditor';
 import { appointmentService } from '@/services/appointmentService';
 import { serviceService } from '@/services/serviceService';
 import { reviewService, ServiceReview } from '@/services/reviewService';
+import { supabase } from '@/lib/supabaseClient';
 import ColombiaLocationFields, { inferDepartment } from '@/components/ui/ColombiaLocationFields';
 import { scheduleService, DayConfig } from '@/services/scheduleService';
 import { Appointment, AppointmentStatus } from '@/types/appointment';
@@ -210,6 +211,29 @@ function ProviderDashboardContent() {
       type: 'success',
       text: 'Horarios guardados. Los clientes ya pueden reservar en esos bloques.',
     });
+  };
+
+  const handleBusinessImageUpload = async (file?: File) => {
+    if (!file || !user) return;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      setFeedbackMessage({ type: 'error', text: 'La imagen debe estar en formato PNG, JPG o WEBP.' });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setFeedbackMessage({ type: 'error', text: 'La imagen no puede superar los 2 MB.' });
+      return;
+    }
+    try {
+      const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const path = `${user.id}/business-${Date.now()}.${extension}`;
+      const { error: uploadError } = await supabase.storage.from('profile-images').upload(path, file, { upsert: true, contentType: file.type });
+      if (uploadError) throw uploadError;
+      const { data } = supabase.storage.from('profile-images').getPublicUrl(path);
+      await updateUser({ avatarUrl: data.publicUrl });
+      setFeedbackMessage({ type: 'success', text: 'Imagen del negocio actualizada correctamente.' });
+    } catch (err) {
+      setFeedbackMessage({ type: 'error', text: err instanceof Error ? err.message : 'No se pudo subir la imagen.' });
+    }
   };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -878,29 +902,14 @@ function ProviderDashboardContent() {
 
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <div className="w-16 h-16 rounded-2xl bg-[#eafaf5] text-[#025a4e] font-bold text-xl flex items-center justify-center shadow-sm">
-                    {businessInitials}
-                  </div>
-                  <button
-                    type="button"
-                    title="Editar logo"
-                    className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#025a4e] text-white flex items-center justify-center shadow-sm"
-                  >
-                    <Pencil className="w-2.5 h-2.5" />
-                  </button>
+                  {user?.avatarUrl ? <img src={user.avatarUrl} alt="Logo o foto del negocio" className="h-16 w-16 rounded-2xl object-cover shadow-sm" /> : <div className="w-16 h-16 rounded-2xl bg-[#eafaf5] text-[#025a4e] font-bold text-xl flex items-center justify-center shadow-sm">{businessInitials}</div>}
+                  <label htmlFor="provider-business-image" title="Editar logo" className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#025a4e] text-white flex items-center justify-center shadow-sm cursor-pointer"><Pencil className="w-2.5 h-2.5" /></label>
+                  <input id="provider-business-image" type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => { void handleBusinessImageUpload(e.target.files?.[0]); e.currentTarget.value = ''; }} />
                 </div>
 
                 <div>
-                  <button
-                    type="button"
-                    onClick={() => alert('Selector de archivo')}
-                    className="text-xs font-bold text-[#025a4e] hover:underline"
-                  >
-                    Subir imagen
-                  </button>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
-                    PNG o JPG · máx. 2 MB · cuadrada
-                  </p>
+                  <button type="button" onClick={() => document.getElementById('provider-business-image')?.click()} className="text-xs font-bold text-[#025a4e] hover:underline">Subir imagen</button>
+                  <p className="text-[11px] text-slate-400 mt-0.5">PNG, JPG o WEBP · máx. 2 MB</p>
                 </div>
               </div>
             </div>
