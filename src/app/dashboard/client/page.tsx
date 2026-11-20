@@ -88,8 +88,6 @@ function ClientDashboardContent() {
     gender: user?.gender || '',
   });
 
-  const [emailReminders, setEmailReminders] = useState(true);
-  const [smsReminders, setSmsReminders] = useState(false);
 
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
