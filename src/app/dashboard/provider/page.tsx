@@ -291,11 +291,9 @@ function ProviderDashboardContent() {
   const activeServicesCount = services.filter((s) => s.isActive).length;
 
   const today = toISODate(new Date());
-  const startOfWeek = new Date();
-  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6);
-  const startOfWeekStr = toISODate(startOfWeek);
+  const endOfWeek = new Date();
+  endOfWeek.setHours(23, 59, 59, 999);
+  endOfWeek.setDate(endOfWeek.getDate() + (6 - endOfWeek.getDay()));
   const endOfWeekStr = toISODate(endOfWeek);
 
   const activeAppointments = appointments.filter(isActive);
@@ -303,7 +301,7 @@ function ProviderDashboardContent() {
   const historyList = appointments.filter((a) => !upcomingList.includes(a)).reverse();
 
   const todayAppointments = activeAppointments.filter((a) => a.date === today);
-  const weekAppointments = activeAppointments.filter((a) => a.date >= startOfWeekStr && a.date <= endOfWeekStr);
+  const weekAppointments = activeAppointments.filter((a) => a.date >= today && a.date <= endOfWeekStr && !isPast(a.date, a.time, a.durationMinutes));
   const confirmedTodayCount = todayAppointments.filter((a) => a.status === 'CONFIRMED').length;
   const pendingTodayCount = todayAppointments.filter((a) => a.status === 'PENDING').length;
   const estimatedRevenueToday = todayAppointments
