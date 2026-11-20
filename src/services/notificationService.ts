@@ -8,6 +8,7 @@ export interface CancellationNotification {
   appointment_date: string;
   appointment_time: string;
   cancelled_by: 'CLIENT' | 'PROVIDER';
+  cancelled_by_name: string;
   cancellation_reason: string | null;
   created_at: string;
   read_at: string | null;
