@@ -508,6 +508,7 @@ function ProviderDashboardContent() {
             <p className="font-serif text-3xl sm:text-4xl font-bold text-slate-900 leading-tight">
               {weekAppointments.length}
             </p>
+            <p className="text-[11px] text-emerald-700 mt-1">citas programadas</p>
             <p className="text-[11px] text-emerald-600 font-medium mt-1">
               citas programadas
             </p>
