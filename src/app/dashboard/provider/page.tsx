@@ -224,8 +224,9 @@ function ProviderDashboardContent() {
       setFeedbackMessage({ type: 'error', text: 'No se guardaron los cambios: la dirección es obligatoria. Completa este campo e inténtalo de nuevo.' });
       return;
     }
-    if (businessProfile.phone.trim() && !/^[+\d\s()-]{7,20}$/.test(businessProfile.phone.trim())) {
-      setFeedbackMessage({ type: 'error', text: 'Verifica el formato del teléfono o WhatsApp.' });
+    const normalizedPhone = businessProfile.phone.trim().replace(/[\s()-]/g, '');
+    if (normalizedPhone && !/^(?:\+57)?3\d{9}$/.test(normalizedPhone)) {
+      setFeedbackMessage({ type: 'error', text: 'Ingresa un celular colombiano válido de 10 dígitos que comience por 3. También puedes incluir el prefijo +57.' });
       return;
     }
     if (businessProfile.website.trim() && !/^https?:\/\/.+\..+/.test(businessProfile.website.trim())) {
@@ -239,7 +240,7 @@ function ProviderDashboardContent() {
         city: businessProfile.city,
         description: businessProfile.description,
         address: businessProfile.address,
-        phone: businessProfile.phone,
+        phone: normalizedPhone,
         website: businessProfile.website,
         cancellationPolicy: businessProfile.cancellationPolicy,
       });
@@ -1027,7 +1028,10 @@ function ProviderDashboardContent() {
                     <div className="relative">
                       <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       <input
-                        type="text"
+                        type="tel"
+                        inputMode="tel"
+                        maxLength={16}
+                        placeholder="Ej. 3001234567 o +573001234567"
                         value={businessProfile.phone}
                         onChange={(e) =>
                           setBusinessProfile({ ...businessProfile, phone: e.target.value })
