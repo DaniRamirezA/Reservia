@@ -24,7 +24,11 @@ export default function NotificationBell() {
 
   useEffect(() => {
     if (!user?.id) return;
-    loadNotifications();
+    let active = true;
+    notificationService.getMyNotifications()
+      .then((rows) => { if (active) setNotifications(rows); })
+      .catch((err) => { if (active) setError(err instanceof Error ? err.message : 'No se pudieron cargar las notificaciones.'); });
+    return () => { active = false; };
   }, [user?.id]);
 
   const unreadCount = notifications.filter((item) => !item.read_at).length;
