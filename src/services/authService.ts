@@ -162,6 +162,7 @@ class AuthService {
         .update({
           provider_name: user.businessName || user.name,
           location: user.city && user.department ? `${user.city}, ${user.department}` : user.city ?? null,
+          provider_address: user.address ?? null,
         })
         .eq('provider_id', userId);
       if (servicesError) throw new Error('El perfil se guardó, pero no se pudieron actualizar tus servicios.');
