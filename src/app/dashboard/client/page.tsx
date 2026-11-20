@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import AuthGuard from '@/components/auth/AuthGuard';
+import NotificationBell from '@/components/ui/NotificationBell';
 import { appointmentService } from '@/services/appointmentService';
 import { authService } from '@/services/authService';
 import { reviewService } from '@/services/reviewService';
@@ -400,13 +401,16 @@ function ClientDashboardContent() {
             </div>
           </div>
 
-          <Link
-            href="/services"
-            className="inline-flex items-center justify-center gap-1.5 bg-[#025a4e] hover:bg-[#03483e] text-white text-xs sm:text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-all self-start sm:self-auto"
-          >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Nueva reserva</span>
-          </Link>
+          <div className="flex items-center gap-3 self-start sm:self-auto">
+            <NotificationBell />
+            <Link
+              href="/services"
+              className="inline-flex items-center justify-center gap-1.5 bg-[#025a4e] hover:bg-[#03483e] text-white text-xs sm:text-sm font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-all"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>Nueva reserva</span>
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">
