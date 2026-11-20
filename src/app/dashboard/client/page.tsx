@@ -249,6 +249,18 @@ function ClientDashboardContent() {
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      setFeedbackMessage({ type: 'error', text: 'Completa los tres campos para cambiar la contraseña.' });
+      return;
+    }
+    if (passwordForm.newPassword.length < 8) {
+      setFeedbackMessage({ type: 'error', text: 'La nueva contraseña debe tener mínimo 8 caracteres.' });
+      return;
+    }
+    if (passwordForm.newPassword === passwordForm.currentPassword) {
+      setFeedbackMessage({ type: 'error', text: 'La nueva contraseña debe ser diferente a la actual.' });
+      return;
+    }
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       setFeedbackMessage({
         type: 'error',
