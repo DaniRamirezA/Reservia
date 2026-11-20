@@ -302,8 +302,6 @@ function ProviderDashboardContent() {
 
   const todayAppointments = activeAppointments.filter((a) => a.date === today);
   const weekAppointments = activeAppointments.filter((a) => a.date >= today && a.date <= endOfWeekStr && !isPast(a.date, a.time, a.durationMinutes));
-  const confirmedTodayCount = todayAppointments.filter((a) => a.status === 'CONFIRMED').length;
-  const pendingTodayCount = todayAppointments.filter((a) => a.status === 'PENDING').length;
   const estimatedRevenueToday = todayAppointments
     .filter((a) => a.status === 'CONFIRMED')
     .reduce((sum, a) => sum + a.price, 0);
@@ -495,9 +493,6 @@ function ProviderDashboardContent() {
             </span>
             <p className="font-serif text-3xl sm:text-4xl font-bold text-slate-900 leading-tight">
               {todayAppointments.length}
-            </p>
-            <p className="text-[11px] text-slate-400 mt-1">
-              {confirmedTodayCount} confirmadas · {pendingTodayCount} pendientes
             </p>
           </button>
 
