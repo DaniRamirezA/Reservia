@@ -107,16 +107,16 @@ function ClientDashboardContent() {
 
     let cancelled = false;
     supabase
-      .from('profiles')
-      .select('id, business_name, name, address')
+      .from('services')
+      .select('provider_id, provider_name, provider_address')
       .in('id', providerIds)
       .then(({ data, error }) => {
         if (cancelled || error || !data) return;
         const names: Record<string, string> = {};
         const addresses: Record<string, string> = {};
         for (const profile of data) {
-          names[profile.id] = profile.business_name || profile.name;
-          if (profile.address?.trim()) addresses[profile.id] = profile.address.trim();
+          names[profile.provider_id] = profile.provider_name;
+          if (profile.provider_address?.trim()) addresses[profile.provider_id] = profile.provider_address.trim();
         }
         setCurrentProviderNames(names);
         setCurrentProviderAddresses(addresses);
