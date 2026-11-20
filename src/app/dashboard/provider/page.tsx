@@ -224,7 +224,7 @@ function ProviderDashboardContent() {
       setFeedbackMessage({ type: 'error', text: 'No se guardaron los cambios: la dirección es obligatoria. Completa este campo e inténtalo de nuevo.' });
       return;
     }
-    if (businessProfile.phone.trim() && !/^[+\\d\\s()-]{7,20}$/.test(businessProfile.phone.trim())) {
+    if (businessProfile.phone.trim() && !/^[+\d\s()-]{7,20}$/.test(businessProfile.phone.trim())) {
       setFeedbackMessage({ type: 'error', text: 'Verifica el formato del teléfono o WhatsApp.' });
       return;
     }
