@@ -2,7 +2,7 @@ import { Appointment, DayAvailability } from '@/types/appointment';
 import { Service } from '@/types/service';
 import { User } from '@/types/auth';
 import { supabase } from '@/lib/supabaseClient';
-import { BusySlot, buildSlots, hoursUntil, nextDays, parseISODate } from '@/lib/agenda';
+import { BusySlot, buildSlots, hoursUntil, parseISODate } from '@/lib/agenda';
 import { scheduleService } from './scheduleService';
 import { serviceService } from './serviceService';
 
@@ -109,7 +109,16 @@ class AppointmentService {
     duration: number,
     ignore?: { date: string; time: string }
   ): Promise<DayAvailability[]> {
-    const dates = nextDays(14);
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setMonth(end.getMonth() + 6);
+    const dates: string[] = [];
+    const cursor = new Date(start);
+    while (cursor <= end) {
+      dates.push(`${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`);
+      cursor.setDate(cursor.getDate() + 1);
+    }
     const [schedule, busy] = await Promise.all([
       scheduleService.getSchedule(providerId),
       this.getBusy(providerId, dates[0], dates[dates.length - 1]),
