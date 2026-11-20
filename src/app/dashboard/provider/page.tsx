@@ -77,6 +77,10 @@ function ProviderDashboardContent() {
 
   const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [reportMonthValue, setReportMonthValue] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoadingAppointments, setIsLoadingAppointments] = useState(true);
@@ -306,8 +310,9 @@ function ProviderDashboardContent() {
     .filter((a) => a.status === 'CONFIRMED')
     .reduce((sum, a) => sum + a.price, 0);
 
-  const reportMonthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  const reportMonthEnd = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+  const [reportYear, reportMonthNumber] = reportMonthValue.split('-').map(Number);
+  const reportMonthStart = new Date(reportYear, reportMonthNumber - 1, 1);
+  const reportMonthEnd = new Date(reportYear, reportMonthNumber, 0);
   const reportMonthCancelled = appointments.filter((apt) => {
     const date = new Date(`${apt.date}T12:00:00`);
     return date >= reportMonthStart && date <= reportMonthEnd && apt.status === 'CANCELLED';
@@ -793,9 +798,19 @@ function ProviderDashboardContent() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="font-serif text-base font-bold text-slate-900">Reportes y métricas del negocio</h2>
-                <p className="text-xs text-slate-400 mt-0.5">Indicadores calculados con las reservas registradas este mes</p>
+                <p className="text-xs text-slate-400 mt-0.5">Indicadores calculados con las reservas del mes seleccionado</p>
               </div>
-              <span className="rounded-xl border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold capitalize text-[#025a4e]">{reportMonthLabel}</span>
+              <label className="flex items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-[#025a4e]">
+                <CalendarDays className="h-4 w-4" />
+                <span className="capitalize">{reportMonthLabel}</span>
+                <input
+                  type="month"
+                  value={reportMonthValue}
+                  onChange={(event) => setReportMonthValue(event.target.value)}
+                  aria-label="Seleccionar mes de los reportes"
+                  className="max-w-[28px] cursor-pointer bg-transparent text-transparent outline-none [color-scheme:light]"
+                />
+              </label>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
