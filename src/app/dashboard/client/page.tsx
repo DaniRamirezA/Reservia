@@ -779,8 +779,8 @@ function ClientDashboardContent() {
                         department={profileForm.department}
                         city={profileForm.city}
                         required
-                        onDepartmentChange={(department) => setProfileForm({ ...profileForm, department })}
-                        onCityChange={(city) => setProfileForm({ ...profileForm, city })}
+                        onDepartmentChange={(department) => setProfileForm((current) => ({ ...current, department, city: '' }))}
+                        onCityChange={(city) => setProfileForm((current) => ({ ...current, city }))}
                       />
                     </div>
 
