@@ -8,6 +8,7 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import { appointmentService } from '@/services/appointmentService';
 import { authService } from '@/services/authService';
 import { reviewService } from '@/services/reviewService';
+import { supabase } from '@/lib/supabaseClient';
 import ColombiaLocationFields, { inferDepartment } from '@/components/ui/ColombiaLocationFields';
 import { Appointment, DayAvailability } from '@/types/appointment';
 import { formatDate, formatTime, hoursUntil, isPast, parseISODate } from '@/lib/agenda';
@@ -183,6 +184,29 @@ function ClientDashboardContent() {
     }
   };
 
+  const handleProfileImageUpload = async (file?: File) => {
+    if (!file || !user) return;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      setFeedbackMessage({ type: 'error', text: 'La imagen debe estar en formato PNG, JPG o WEBP.' });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setFeedbackMessage({ type: 'error', text: 'La imagen no puede superar los 2 MB.' });
+      return;
+    }
+    try {
+      const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const path = `${user.id}/profile-${Date.now()}.${extension}`;
+      const { error: uploadError } = await supabase.storage.from('profile-images').upload(path, file, { upsert: true, contentType: file.type });
+      if (uploadError) throw uploadError;
+      const { data } = supabase.storage.from('profile-images').getPublicUrl(path);
+      await updateUser({ avatarUrl: data.publicUrl });
+      setFeedbackMessage({ type: 'success', text: 'Foto de perfil actualizada correctamente.' });
+    } catch (err) {
+      setFeedbackMessage({ type: 'error', text: err instanceof Error ? err.message : 'No se pudo subir la imagen.' });
+    }
+  };
+
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profileForm.department.trim() || !profileForm.city.trim()) {
@@ -198,8 +222,8 @@ function ClientDashboardContent() {
       setFeedbackMessage({ type: 'error', text: 'Ingresa un celular colombiano válido de 10 dígitos que comience por 3. También puedes incluir el prefijo +57.' });
       return;
     }
-    if (profileForm.birthDate && Number.isNaN(Date.parse(profileForm.birthDate))) {
-      setFeedbackMessage({ type: 'error', text: 'Ingresa una fecha de nacimiento válida.' });
+    if (profileForm.birthDate && (Number.isNaN(Date.parse(profileForm.birthDate)) || profileForm.birthDate > new Date().toISOString().slice(0, 10))) {
+      setFeedbackMessage({ type: 'error', text: 'La fecha de nacimiento debe ser válida y no puede estar en el futuro.' });
       return;
     }
     try {
@@ -612,15 +636,9 @@ function ClientDashboardContent() {
             <div className="space-y-6">
               <div className="bg-white border border-slate-100 rounded-2xl p-6 flex flex-col items-center text-center shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
                 <div className="relative mb-3">
-                  <div className="w-20 h-20 rounded-full bg-[#025a4e] text-white flex items-center justify-center font-bold text-2xl tracking-tight shadow-sm">
-                    {initials}
-                  </div>
-                  <button
-                    title="Subir foto de perfil"
-                    className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-[#025a4e] text-white border-2 border-white flex items-center justify-center hover:bg-[#03483e] transition-colors shadow-sm"
-                  >
-                    <Upload className="w-3 h-3" />
-                  </button>
+                  {user?.avatarUrl ? <img src={user.avatarUrl} alt="Foto de perfil" className="w-20 h-20 rounded-full object-cover shadow-sm" /> : <div className="w-20 h-20 rounded-full bg-[#025a4e] text-white flex items-center justify-center font-bold text-2xl tracking-tight shadow-sm">{initials}</div>}
+                  <label htmlFor="client-profile-image" className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-[#025a4e] text-white border-2 border-white flex items-center justify-center hover:bg-[#03483e] transition-colors shadow-sm cursor-pointer" title="Subir foto de perfil"><Upload className="w-3 h-3" /></label>
+                  <input id="client-profile-image" type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => { void handleProfileImageUpload(e.target.files?.[0]); e.currentTarget.value = ''; }} />
                 </div>
 
                 <h3 className="font-serif text-lg font-bold text-slate-900 leading-snug">
@@ -636,7 +654,7 @@ function ClientDashboardContent() {
 
                 <button
                   type="button"
-                  onClick={() => alert('Selector de foto de perfil')}
+                  onClick={() => document.getElementById('client-profile-image')?.click()}
                   className="w-full mt-4 py-2 border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold rounded-xl transition-colors"
                 >
                   Cambiar foto
@@ -764,7 +782,8 @@ function ClientDashboardContent() {
                         </label>
                         <div className="relative">
                           <input
-                            type="text"
+                            type="date"
+                            max={new Date().toISOString().slice(0, 10)}
                             value={profileForm.birthDate}
                             onChange={(e) =>
                               setProfileForm({ ...profileForm, birthDate: e.target.value })
