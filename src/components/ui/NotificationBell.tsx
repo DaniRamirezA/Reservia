@@ -25,12 +25,6 @@ export default function NotificationBell() {
   useEffect(() => {
     if (!user?.id) return;
     loadNotifications();
-    const channel = (awaitableChannel => awaitableChannel)(
-      // Supabase Realtime refreshes the list when a new notification arrives.
-      // The database publication must include public.notifications.
-      (requireRealtimeChannel => requireRealtimeChannel)(null as never)
-    );
-    return () => { void channel; };
   }, [user?.id]);
 
   const unreadCount = notifications.filter((item) => !item.read_at).length;
