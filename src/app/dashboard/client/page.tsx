@@ -222,7 +222,7 @@ function ClientDashboardContent() {
       setFeedbackMessage({ type: 'error', text: 'Ingresa un celular colombiano válido de 10 dígitos que comience por 3. También puedes incluir el prefijo +57.' });
       return;
     }
-    if (profileForm.birthDate && (Number.isNaN(Date.parse(profileForm.birthDate)) || profileForm.birthDate > new Date().toISOString().slice(0, 10))) {
+    if (profileForm.birthDate && (Number.isNaN(Date.parse(profileForm.birthDate)) || profileForm.birthDate > new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10))) {
       setFeedbackMessage({ type: 'error', text: 'La fecha de nacimiento debe ser válida y no puede estar en el futuro.' });
       return;
     }
@@ -795,7 +795,7 @@ function ClientDashboardContent() {
                         <div className="relative">
                           <input
                             type="date"
-                            max={new Date().toISOString().slice(0, 10)}
+                            max={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10)}
                             value={profileForm.birthDate}
                             onChange={(e) =>
                               setProfileForm({ ...profileForm, birthDate: e.target.value })
