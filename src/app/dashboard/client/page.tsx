@@ -187,8 +187,9 @@ function ClientDashboardContent() {
       setFeedbackMessage({ type: 'error', text: 'Ingresa un nombre completo válido (mínimo 3 caracteres).' });
       return;
     }
-    if (profileForm.phone.trim() && !/^[+\d\s()-]{7,20}$/.test(profileForm.phone.trim())) {
-      setFeedbackMessage({ type: 'error', text: 'Verifica el formato del número de teléfono.' });
+    const normalizedPhone = profileForm.phone.trim().replace(/[\s()-]/g, '');
+    if (normalizedPhone && !/^(?:\+57)?3\d{9}$/.test(normalizedPhone)) {
+      setFeedbackMessage({ type: 'error', text: 'Ingresa un celular colombiano válido de 10 dígitos que comience por 3. También puedes incluir el prefijo +57.' });
       return;
     }
     if (profileForm.birthDate && Number.isNaN(Date.parse(profileForm.birthDate))) {
@@ -198,7 +199,7 @@ function ClientDashboardContent() {
     try {
       await updateUser({
         name: profileForm.fullName,
-        phone: profileForm.phone,
+        phone: normalizedPhone,
         birthDate: profileForm.birthDate,
         city: profileForm.city,
         gender: profileForm.gender,
@@ -734,7 +735,10 @@ function ClientDashboardContent() {
                           Teléfono
                         </label>
                         <input
-                          type="text"
+                          type="tel"
+                          inputMode="tel"
+                          maxLength={16}
+                          placeholder="Ej. 3001234567 o +573001234567"
                           value={profileForm.phone}
                           onChange={(e) =>
                             setProfileForm({ ...profileForm, phone: e.target.value })
