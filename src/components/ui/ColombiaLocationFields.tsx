@@ -31,7 +31,7 @@ export default function ColombiaLocationFields({ department, city, onDepartmentC
     <>
       <div>
         <label className={labelClass}>Departamento{required && <span className="text-rose-500"> *</span>}</label>
-        <select value={department} required={required} onChange={(e) => { onDepartmentChange(e.target.value); onCityChange(''); }} className={inputClass}>
+        <select value={department} required={required} onChange={(e) => onDepartmentChange(e.target.value)} className={inputClass}>
           <option value="">Selecciona un departamento</option>
           {departments.map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}
         </select>
