@@ -185,6 +185,10 @@ function ClientDashboardContent() {
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!profileForm.department.trim() || !profileForm.city.trim()) {
+      setFeedbackMessage({ type: 'error', text: 'Selecciona un departamento y un municipio antes de guardar.' });
+      return;
+    }
     if (profileForm.fullName.trim().length < 3) {
       setFeedbackMessage({ type: 'error', text: 'Ingresa un nombre completo válido (mínimo 3 caracteres).' });
       return;
@@ -774,6 +778,7 @@ function ClientDashboardContent() {
                       <ColombiaLocationFields
                         department={profileForm.department}
                         city={profileForm.city}
+                        required
                         onDepartmentChange={(department) => setProfileForm({ ...profileForm, department })}
                         onCityChange={(city) => setProfileForm({ ...profileForm, city })}
                       />
