@@ -23,6 +23,8 @@ import {
   CheckCircle2,
   Upload,
   CalendarDays,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   User,
   Star,
@@ -72,6 +74,10 @@ function ClientDashboardContent() {
   const [rescheduleModalApt, setRescheduleModalApt] = useState<Appointment | null>(null);
   const [policyHours, setPolicyHours] = useState(24);
   const [rescheduleDays, setRescheduleDays] = useState<DayAvailability[]>([]);
+  const [rescheduleVisibleMonth, setRescheduleVisibleMonth] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
   const [newDate, setNewDate] = useState('');
   const [newTime, setNewTime] = useState('');
   const [modalError, setModalError] = useState<string | null>(null);
@@ -182,7 +188,12 @@ function ClientDashboardContent() {
         const firstFree = days.find((d) =>
           d.slots.some((t) => !(d.date === apt.date && t === apt.time))
         );
-        setNewDate(firstFree?.date ?? '');
+        const initialDate = firstFree?.date ?? '';
+        setNewDate(initialDate);
+        if (initialDate) {
+          const initial = parseISODate(initialDate);
+          setRescheduleVisibleMonth(new Date(initial.getFullYear(), initial.getMonth(), 1));
+        }
       })
       .catch((err: Error) => setModalError(err.message));
   };
@@ -192,6 +203,8 @@ function ClientDashboardContent() {
     setNewDate('');
     setNewTime('');
     setRescheduleDays([]);
+    const now = new Date();
+    setRescheduleVisibleMonth(new Date(now.getFullYear(), now.getMonth(), 1));
     setRescheduleModalApt(apt);
     loadRescheduleDays(apt, false);
     appointmentService.getCancellationHours(apt.providerId).then(setPolicyHours);
@@ -344,6 +357,36 @@ function ClientDashboardContent() {
     ? hoursUntil(rescheduleModalApt.date, rescheduleModalApt.time) < policyHours
     : false;
   const selectedDay = rescheduleDays.find((d) => d.date === newDate);
+  const visibleRescheduleDays = rescheduleDays.filter((day) => {
+    const date = parseISODate(day.date);
+    return date.getFullYear() === rescheduleVisibleMonth.getFullYear()
+      && date.getMonth() === rescheduleVisibleMonth.getMonth();
+  });
+  const rescheduleToday = new Date();
+  rescheduleToday.setHours(0, 0, 0, 0);
+  const rescheduleLastDate = new Date(rescheduleToday);
+  rescheduleLastDate.setMonth(rescheduleLastDate.getMonth() + 6);
+  const canGoToPreviousRescheduleMonth =
+    rescheduleVisibleMonth.getFullYear() > rescheduleToday.getFullYear()
+    || (rescheduleVisibleMonth.getFullYear() === rescheduleToday.getFullYear()
+      && rescheduleVisibleMonth.getMonth() > rescheduleToday.getMonth());
+  const canGoToNextRescheduleMonth =
+    new Date(rescheduleVisibleMonth.getFullYear(), rescheduleVisibleMonth.getMonth() + 1, 1)
+    <= new Date(rescheduleLastDate.getFullYear(), rescheduleLastDate.getMonth(), 1);
+  const rescheduleMonthLabel = rescheduleVisibleMonth.toLocaleDateString('es-CO', {
+    month: 'long',
+    year: 'numeric',
+  });
+  const changeRescheduleMonth = (month: Date) => {
+    setRescheduleVisibleMonth(month);
+    const monthDays = rescheduleDays.filter((day) => {
+      const date = parseISODate(day.date);
+      return date.getFullYear() === month.getFullYear() && date.getMonth() === month.getMonth();
+    });
+    const firstAvailable = monthDays.find((day) => freeSlots(day).length > 0);
+    setNewDate(firstAvailable?.date ?? '');
+    setNewTime('');
+  };
 
   const initials = user?.name
     ? user.name
@@ -1142,14 +1185,37 @@ function ClientDashboardContent() {
                 <p className="text-xs text-slate-400">Cargando horarios disponibles...</p>
               ) : !rescheduleDays.some((d) => freeSlots(d).length > 0) ? (
                 <p className="text-xs text-slate-500 rounded-lg bg-slate-50 border border-slate-100 p-3">
-                  No hay otros horarios disponibles en los próximos 14 días.
+                  No hay otros horarios disponibles en los próximos seis meses.
                 </p>
               ) : (
                 <>
                   <div>
-                    <span className="block text-xs font-semibold text-slate-700 mb-2">Nueva fecha</span>
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="block text-xs font-semibold text-slate-700">Nueva fecha</span>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          aria-label="Mes anterior"
+                          disabled={!canGoToPreviousRescheduleMonth}
+                          onClick={() => changeRescheduleMonth(new Date(rescheduleVisibleMonth.getFullYear(), rescheduleVisibleMonth.getMonth() - 1, 1))}
+                          className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <span className="min-w-[130px] text-center text-xs font-semibold capitalize text-slate-700">{rescheduleMonthLabel}</span>
+                        <button
+                          type="button"
+                          aria-label="Mes siguiente"
+                          disabled={!canGoToNextRescheduleMonth}
+                          onClick={() => changeRescheduleMonth(new Date(rescheduleVisibleMonth.getFullYear(), rescheduleVisibleMonth.getMonth() + 1, 1))}
+                          className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
                     <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
-                      {rescheduleDays.map((day) => {
+                      {visibleRescheduleDays.map((day) => {
                         const date = parseISODate(day.date);
                         const isFull = freeSlots(day).length === 0;
                         return (
@@ -1177,6 +1243,9 @@ function ClientDashboardContent() {
                         );
                       })}
                     </div>
+                    {visibleRescheduleDays.length === 0 && (
+                      <p className="mt-2 text-xs text-slate-400">No hay fechas disponibles en este mes.</p>
+                    )}
                   </div>
 
                   <div>
