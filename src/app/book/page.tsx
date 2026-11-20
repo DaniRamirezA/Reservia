@@ -228,6 +228,7 @@ function BookingWizardContent() {
                         Confirma el servicio
                       </h2>
                       <p className="text-xs text-slate-400 mt-1">Vas a reservar en {business.providerName}</p>
+                      {business.providerAddress && <p className="mt-1 flex items-center gap-1 text-xs text-slate-500"><MapPin className="h-3.5 w-3.5 shrink-0" />{business.providerAddress}</p> }
                     </div>
 
                     <div className="rounded-2xl p-5 border-2 border-[#025a4e] bg-[#f0faf7]">
@@ -360,6 +361,7 @@ function BookingWizardContent() {
                         <span className="text-slate-400">Proveedor</span>
                         <span className="font-bold text-slate-900">{business.providerName}</span>
                       </div>
+                      {business.providerAddress && <div className="flex justify-between gap-4 py-2"><span className="text-slate-400">Dirección</span><span className="text-right font-bold text-slate-900">{business.providerAddress}</span></div>}
                       <div className="flex justify-between py-2">
                         <span className="text-slate-400">Servicio</span>
                         <span className="font-bold text-slate-900">{business.name}</span>
@@ -435,6 +437,7 @@ function BookingWizardContent() {
                       <span>{business.providerLocation}</span>
                     </div>
                   )}
+                  {business.providerAddress && <div className="mt-1 flex items-start gap-1.5 text-xs text-slate-500"><MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" /><span>{business.providerAddress}</span></div>}
 
                   <div className="flex items-center gap-1 text-xs font-semibold text-slate-700 mt-2">
                     <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
