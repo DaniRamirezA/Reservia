@@ -25,6 +25,9 @@ import {
   Clock,
   User,
   Star,
+  MapPin,
+  Phone,
+  Globe,
 } from 'lucide-react';
 
 type TabType = 'citas' | 'historial' | 'perfil';
@@ -51,6 +54,9 @@ function ClientDashboardContent() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [currentProviderNames, setCurrentProviderNames] = useState<Record<string, string>>({});
   const [currentProviderAddresses, setCurrentProviderAddresses] = useState<Record<string, string>>({});
+  const [currentProviderPhones, setCurrentProviderPhones] = useState<Record<string, string>>({});
+  const [currentProviderWebsites, setCurrentProviderWebsites] = useState<Record<string, string>>({});
+  const [currentProviderAvatars, setCurrentProviderAvatars] = useState<Record<string, string>>({});
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
 
@@ -108,18 +114,27 @@ function ClientDashboardContent() {
     let cancelled = false;
     supabase
       .from('services')
-      .select('provider_id, provider_name, provider_address')
-      .in('id', providerIds)
+      .select('provider_id, provider_name, provider_address, provider_phone, provider_website, provider_avatar_url')
+      .in('provider_id', providerIds)
       .then(({ data, error }) => {
         if (cancelled || error || !data) return;
         const names: Record<string, string> = {};
         const addresses: Record<string, string> = {};
+        const phones: Record<string, string> = {};
+        const websites: Record<string, string> = {};
+        const avatars: Record<string, string> = {};
         for (const profile of data) {
           names[profile.provider_id] = profile.provider_name;
           if (profile.provider_address?.trim()) addresses[profile.provider_id] = profile.provider_address.trim();
+          if (profile.provider_phone?.trim()) phones[profile.provider_id] = profile.provider_phone.trim();
+          if (profile.provider_website?.trim()) websites[profile.provider_id] = profile.provider_website.trim();
+          if (profile.provider_avatar_url?.trim()) avatars[profile.provider_id] = profile.provider_avatar_url.trim();
         }
         setCurrentProviderNames(names);
         setCurrentProviderAddresses(addresses);
+        setCurrentProviderPhones(phones);
+        setCurrentProviderWebsites(websites);
+        setCurrentProviderAvatars(avatars);
       });
 
     return () => { cancelled = true; };
@@ -505,8 +520,8 @@ function ClientDashboardContent() {
                   className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all"
                 >
                   <div className="flex items-start gap-4 w-full sm:w-auto">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#eafaf5] to-teal-100 text-[#025a4e] flex items-center justify-center flex-shrink-0">
-                      <CalendarDays className="w-8 h-8" />
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#eafaf5] to-teal-100 text-[#025a4e] flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {currentProviderAvatars[apt.providerId] ? <img src={currentProviderAvatars[apt.providerId]} alt={currentProviderNames[apt.providerId] || apt.providerName} className="h-full w-full object-cover" /> : <CalendarDays className="w-8 h-8" />}
                     </div>
 
                     <div className="flex flex-col justify-between flex-1 min-w-0">
@@ -515,6 +530,8 @@ function ClientDashboardContent() {
                           {currentProviderNames[apt.providerId] || apt.providerName}
                         </h3>
                         {currentProviderAddresses[apt.providerId] && <p className="mt-0.5 flex items-start gap-1 text-xs text-slate-500"><MapPin className="mt-0.5 h-3 w-3 shrink-0" />{currentProviderAddresses[apt.providerId]}</p>}
+                        {currentProviderPhones[apt.providerId] && <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500"><Phone className="h-3 w-3 shrink-0" />{currentProviderPhones[apt.providerId]}</p>}
+                        {currentProviderWebsites[apt.providerId] && <a href={'https://' + currentProviderWebsites[apt.providerId].replace(/^https?:\/\//i, '')} target="_blank" rel="noreferrer" className="mt-0.5 inline-flex items-center gap-1 text-xs text-[#025a4e] hover:underline"><Globe className="h-3 w-3 shrink-0" />{currentProviderWebsites[apt.providerId]}</a>}
                         <p className="text-xs text-slate-400 font-normal mt-0.5">{apt.serviceName}</p>
 
                         <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 font-normal mt-2">
@@ -615,6 +632,8 @@ function ClientDashboardContent() {
                       <td className="py-4 px-6 font-bold text-slate-900">
                         {currentProviderNames[item.providerId] || item.providerName}
                         {currentProviderAddresses[item.providerId] && <span className="mt-1 block font-normal text-slate-500">{currentProviderAddresses[item.providerId]}</span>}
+                        {currentProviderPhones[item.providerId] && <span className="mt-1 block font-normal text-slate-500">{currentProviderPhones[item.providerId]}</span>}
+                        {currentProviderWebsites[item.providerId] && <a href={'https://' + currentProviderWebsites[item.providerId].replace(/^https?:\/\//i, '')} target="_blank" rel="noreferrer" className="mt-1 block font-normal text-[#025a4e] hover:underline">{currentProviderWebsites[item.providerId]}</a>}
                       </td>
 
                       <td className="py-4 px-6 text-slate-400 font-normal">
@@ -945,6 +964,8 @@ function ClientDashboardContent() {
                 <p className="text-xs text-slate-400">Proveedor</p>
                 <p className="font-semibold text-slate-900">{currentProviderNames[detailModalApt.providerId] || detailModalApt.providerName}</p>
                 {currentProviderAddresses[detailModalApt.providerId] && <p className="mt-1 flex items-start gap-1 text-xs text-slate-500"><MapPin className="mt-0.5 h-3 w-3 shrink-0" />{currentProviderAddresses[detailModalApt.providerId]}</p>}
+                {currentProviderPhones[detailModalApt.providerId] && <p className="mt-1 flex items-center gap-1 text-xs text-slate-500"><Phone className="h-3 w-3" />{currentProviderPhones[detailModalApt.providerId]}</p>}
+                {currentProviderWebsites[detailModalApt.providerId] && <a href={'https://' + currentProviderWebsites[detailModalApt.providerId].replace(/^https?:\/\//i, '')} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-xs text-[#025a4e] hover:underline"><Globe className="h-3 w-3" />{currentProviderWebsites[detailModalApt.providerId]}</a>}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
