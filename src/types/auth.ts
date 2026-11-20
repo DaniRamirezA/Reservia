@@ -14,6 +14,7 @@ export interface User {
   businessCategory?: string;
   address?: string;
   city?: string;
+  department?: string;
   documentNumber?: string;
   description?: string;
   website?: string;
