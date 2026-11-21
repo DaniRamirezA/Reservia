@@ -20,7 +20,7 @@ const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
 export default function ServiceDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
 
   const [service, setService] = useState<Service | null>(null);
   const [reviews, setReviews] = useState<ServiceReview[]>([]);
@@ -31,25 +31,44 @@ export default function ServiceDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    serviceService
-      .getServiceById(id)
-      .then(async (found) => {
-        if (!found) return;
-        const [providerSchedule, availability, policyHours] = await Promise.all([
-          scheduleService.getSchedule(found.providerId),
-          appointmentService.getAvailability(found.providerId, found.durationMinutes),
-          appointmentService.getCancellationHours(found.providerId),
-        ]);
-        setService(found);
+    if (isAuthLoading) return;
+
+    let cancelled = false;
+    const loadService = async () => {
+      try {
+        const found = await serviceService.getServiceById(id);
+        if (!found) {
+          if (!cancelled) setService(null);
+          return;
+        }
+
         const serviceReviews = await reviewService.getServiceReviews(found.id);
+        if (cancelled) return;
+        setService(found);
         setReviews(serviceReviews);
-        setSchedule(providerSchedule);
-        setDays(availability);
-        setCancellationHours(policyHours);
-      })
-      .catch((err: Error) => setError(err.message))
-      .finally(() => setIsLoading(false));
-  }, [id]);
+
+        // Los horarios y la disponibilidad solo se consultan para clientes autenticados.
+        if (user?.role === 'CLIENT') {
+          const [providerSchedule, availability, policyHours] = await Promise.all([
+            scheduleService.getSchedule(found.providerId),
+            appointmentService.getAvailability(found.providerId, found.durationMinutes),
+            appointmentService.getCancellationHours(found.providerId),
+          ]);
+          if (cancelled) return;
+          setSchedule(providerSchedule);
+          setDays(availability);
+          setCancellationHours(policyHours);
+        }
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'No se pudo cargar el servicio.');
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+
+    loadService();
+    return () => { cancelled = true; };
+  }, [id, user?.id, user?.role, isAuthLoading]);
 
   if (isLoading) {
     return (
@@ -156,6 +175,7 @@ export default function ServiceDetailPage() {
                 )}
               </section>
 
+              {user?.role === 'CLIENT' && (
               <div>
                 <h2 className="text-sm font-bold text-slate-900 mb-3">Próximos horarios disponibles</h2>
                 {nextDaysWithSlots.length === 0 ? (
@@ -182,6 +202,7 @@ export default function ServiceDetailPage() {
                   </div>
                 )}
               </div>
+              )}
             </div>
           </div>
 
@@ -191,12 +212,14 @@ export default function ServiceDetailPage() {
               <p className="text-3xl font-bold text-[#025a4e] mt-1">${service.price.toLocaleString('es-CO')}</p>
               <p className="text-xs text-slate-500 mt-1">Duración: {service.durationMinutes} min</p>
 
-              <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-3">
-                <p className="text-xs font-semibold text-amber-900">Política de cancelación</p>
-                <p className="mt-1 text-xs leading-relaxed text-amber-800">
-                  Puedes cancelar o reprogramar esta reserva hasta {cancellationHours} horas antes de la hora programada. Después de ese plazo, la plataforma bloqueará la solicitud.
-                </p>
-              </div>
+              {user?.role === 'CLIENT' && (
+                <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-3">
+                  <p className="text-xs font-semibold text-amber-900">Política de cancelación</p>
+                  <p className="mt-1 text-xs leading-relaxed text-amber-800">
+                    Puedes cancelar o reprogramar esta reserva hasta {cancellationHours} horas antes de la hora programada. Después de ese plazo, la plataforma bloqueará la solicitud.
+                  </p>
+                </div>
+              )}
 
               {!service.isActive ? (
                 <p className="mt-5 rounded-xl bg-amber-50 border border-amber-100 p-3 text-xs text-amber-700 flex gap-2">
@@ -207,6 +230,24 @@ export default function ServiceDetailPage() {
                 <p className="mt-5 rounded-xl bg-slate-50 border border-slate-100 p-3 text-xs text-slate-500">
                   Las cuentas de proveedor no pueden reservar citas.
                 </p>
+              ) : !user ? (
+                <div className="mt-5 space-y-3">
+                  <p className="rounded-xl border border-teal-100 bg-[#eafaf5] p-3 text-xs leading-relaxed text-[#034d43]">
+                    Regístrate o inicia sesión para consultar los horarios disponibles y reservar este servicio.
+                  </p>
+                  <Link
+                    href={`/register/client?next=${encodeURIComponent(`/services/${service.id}`)}`}
+                    className="block w-full rounded-xl bg-[#025a4e] hover:bg-[#03483e] py-3.5 text-center text-sm font-semibold text-white shadow-sm transition-all"
+                  >
+                    Registrarme para ver horarios
+                  </Link>
+                  <Link
+                    href={`/login?next=${encodeURIComponent(`/services/${service.id}`)}`}
+                    className="block w-full rounded-xl border border-slate-200 py-3 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    Ya tengo cuenta · Iniciar sesión
+                  </Link>
+                </div>
               ) : (
                 <Link
                   href={`/book?serviceId=${service.id}`}
@@ -217,6 +258,7 @@ export default function ServiceDetailPage() {
               )}
             </div>
 
+            {user?.role === 'CLIENT' && (
             <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
               <h2 className="text-sm font-bold text-slate-900 mb-3">Horario de atención</h2>
               {schedule.length === 0 ? (
@@ -239,6 +281,7 @@ export default function ServiceDetailPage() {
                 </div>
               )}
             </div>
+            )}
           </div>
         </div>
       </div>
