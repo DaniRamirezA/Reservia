@@ -86,8 +86,11 @@ export default function RegisterForm({ initialRole = 'CLIENT' }: RegisterFormPro
           email: formData.email,
           password: formData.password,
         });
-        if (created) router.push('/dashboard/client');
-        else setEmailSent(true);
+        if (created) {
+          const next = new URLSearchParams(window.location.search).get('next');
+          const returnTo = next?.startsWith('/services/') && !next.startsWith('//') ? next : '/dashboard/client';
+          router.push(returnTo);
+        } else setEmailSent(true);
       } else {
         const created = await registerProvider({
           name: formData.name,
