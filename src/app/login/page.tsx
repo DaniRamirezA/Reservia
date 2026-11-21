@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Star, Loader2, AlertCircle, User, Building2 } from 'lucide-react';
 
@@ -16,7 +16,6 @@ export default function LoginPage() {
 
   const { login } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const handleRoleToggle = (selectedRole: 'CLIENT' | 'PROVIDER') => {
     setRole(selectedRole);
@@ -44,7 +43,7 @@ export default function LoginPage() {
       if (loggedUser.role === 'PROVIDER') {
         router.push('/dashboard/provider');
       } else {
-        const next = searchParams.get('next');
+        const next = new URLSearchParams(window.location.search).get('next');
         const returnTo = next?.startsWith('/services/') && !next.startsWith('//') ? next : '/dashboard/client';
         router.push(returnTo);
       }
